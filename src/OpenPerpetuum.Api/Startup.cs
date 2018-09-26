@@ -165,7 +165,7 @@ namespace OpenPerpetuum.Api
             app.UseHttpsRedirection();
             isHttps = true;
 
-            startupLog.LogInformation($"Startup Variables ->\n      Development mode: {isDevMode.ToEnabledString()}\n      HSTS mode:\t{isHsts.ToEnabledString()}\n      HTTPS mode:\t{isHttps.ToEnabledString()}\n");
+            startupLog.LogInformation($"********************\n      Development mode: {isDevMode.ToEnabledString()}\n      HSTS mode:\t{isHsts.ToEnabledString()}\n      HTTPS mode:\t{isHttps.ToEnabledString()}\n      ********************");
 
 			app
 				.UseAuthentication()
