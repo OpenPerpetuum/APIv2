@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
 using Microsoft.Extensions.Options;
+using OpenPerpetuum.Api.DependencyInstallers;
 using OpenPerpetuum.Core.Extensions;
 using SimpleInjector;
 using SimpleInjector.Integration.AspNetCore.Mvc;
@@ -201,10 +202,11 @@ namespace OpenPerpetuum.Api
             container.RegisterInstance<Func<IViewBufferScope>>(() => app.GetRequestService<IViewBufferScope>());
             container.RegisterInstance(typeof(IServiceProvider), container); // Self registration; basically enables witchcraft...
 
-            // Add Middleware here!
-            // Note that the order in which you enable them in Configure/ConfigureServices is important!
+			// Add Middleware here!
+			// Note that the order in which you enable them in Configure/ConfigureServices is important!
 
-            // Add "Other Stuff" here! (I typically use Dependency Installers rather than list all my deps here)
+			// Add "Other Stuff" here! (I typically use Dependency Installers rather than list all my deps here)
+			container.RegisterPerpetuumApiTypes();
         }
 
         // This should stop the API from returning 302 redirects (attempts to present you a login page) for 401 Unauthorised

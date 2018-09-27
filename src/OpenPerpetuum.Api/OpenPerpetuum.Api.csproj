@@ -26,6 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OpenPerpetuum.Core.DataServices\OpenPerpetuum.Core.DataServices.csproj" />
+    <ProjectReference Include="..\OpenPerpetuum.Core.Foundation\OpenPerpetuum.Core.Foundation.csproj" />
     <ProjectReference Include="..\OpenPerpetuum.Core\OpenPerpetuum.Core.Extensions\OpenPerpetuum.Core.Extensions.csproj" />
   </ItemGroup>
 

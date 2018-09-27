@@ -5,14 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Database\ResultTypes\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="System.Data.SqlClient" Version="4.5.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OpenPerpetuum.Core.Foundation\OpenPerpetuum.Core.Foundation.csproj" />
     <ProjectReference Include="..\OpenPerpetuum.Core\OpenPerpetuum.Core.Extensions\OpenPerpetuum.Core.Extensions.csproj" />
   </ItemGroup>
 

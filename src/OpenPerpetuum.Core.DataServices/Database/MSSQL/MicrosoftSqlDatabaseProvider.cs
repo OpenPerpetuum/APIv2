@@ -12,10 +12,12 @@ namespace OpenPerpetuum.Core.DataServices.Database.MSSQL
 {
 	public class MicrosoftSqlDatabaseProvider : IDatabaseProvider
 	{
+		public string ProviderName { get; }
 		public string ConnectionString { get; }
 
-		public MicrosoftSqlDatabaseProvider(string connectionString)
+		public MicrosoftSqlDatabaseProvider(string providerName, string connectionString)
 		{
+			ProviderName = providerName;
 			ConnectionString = connectionString;
 		}
 
