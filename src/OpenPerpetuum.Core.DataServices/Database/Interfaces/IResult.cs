@@ -1,4 +1,4 @@
-﻿namespace OpenPerpetuum.Core.DataServices.Interfaces
+﻿namespace OpenPerpetuum.Core.DataServices.Database.Interfaces
 {
 	public interface IResult
 	{

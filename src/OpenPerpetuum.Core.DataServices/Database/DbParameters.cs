@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OpenPerpetuum.Core.DataServices
+namespace OpenPerpetuum.Core.DataServices.Database
 {
 	/// <summary>
 	/// Used to pass parameters to database stored procedures in a recognisable and concise way

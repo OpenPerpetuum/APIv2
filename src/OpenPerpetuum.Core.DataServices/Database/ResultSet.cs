@@ -5,9 +5,8 @@ using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
-namespace OpenPerpetuum.Core.DataServices
+namespace OpenPerpetuum.Core.DataServices.Database
 {
 	public abstract class ResultSet
 	{

@@ -1,4 +1,4 @@
-﻿namespace OpenPerpetuum.Core.DataServices
+﻿namespace OpenPerpetuum.Core.DataServices.Database
 {
 	// This enum should contain the CUSTOM error type/code mapping
 	// e.g. CharacterNameExists could be a violation of UQ_Character_Name with code 110001

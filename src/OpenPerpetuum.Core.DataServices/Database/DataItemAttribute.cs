@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpenPerpetuum.Core.DataServices
+namespace OpenPerpetuum.Core.DataServices.Database
 {
 	/// <summary>
 	/// Required to build up user defined table types for submission to MS SQL

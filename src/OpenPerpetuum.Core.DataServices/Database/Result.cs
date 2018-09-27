@@ -1,6 +1,6 @@
-﻿using OpenPerpetuum.Core.DataServices.Interfaces;
+﻿using OpenPerpetuum.Core.DataServices.Database.Interfaces;
 
-namespace OpenPerpetuum.Core.DataServices
+namespace OpenPerpetuum.Core.DataServices.Database
 {
 	public class Result : IResult
 	{

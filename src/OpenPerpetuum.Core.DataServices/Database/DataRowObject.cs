@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
-namespace OpenPerpetuum.Core.DataServices
+namespace OpenPerpetuum.Core.DataServices.Database
 {
 	public class DataRowObject : NameObjectCollectionBase
 	{

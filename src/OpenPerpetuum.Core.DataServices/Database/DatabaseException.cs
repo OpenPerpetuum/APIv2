@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpenPerpetuum.Core.DataServices
+namespace OpenPerpetuum.Core.DataServices.Database
 {
 	/// <summary>
 	/// Wrapper around Exception that allows the use of a SQL error code enum for better usability

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OpenPerpetuum.Core.DataServices.Interfaces
+﻿namespace OpenPerpetuum.Core.DataServices.Database.Interfaces
 {
 	public interface IDataContext
 	{

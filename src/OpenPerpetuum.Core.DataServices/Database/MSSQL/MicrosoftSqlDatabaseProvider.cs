@@ -1,5 +1,5 @@
 ﻿using Microsoft.SqlServer.Server;
-using OpenPerpetuum.Core.DataServices.Interfaces;
+using OpenPerpetuum.Core.DataServices.Database.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -8,7 +8,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 
-namespace OpenPerpetuum.Core.DataServices.MSSQL
+namespace OpenPerpetuum.Core.DataServices.Database.MSSQL
 {
 	public class MicrosoftSqlDatabaseProvider : IDatabaseProvider
 	{

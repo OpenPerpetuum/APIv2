@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace OpenPerpetuum.Core.DataServices
+namespace OpenPerpetuum.Core.DataServices.Database
 {
 	public abstract class DatabaseResult
 	{
