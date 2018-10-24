@@ -9,7 +9,9 @@ namespace OpenPerpetuum.Api.Authorisation
 	/// </summary>
 	public class ApplicationContext : DbContext
 	{
-		public ApplicationContext(DbContextOptions options) : base(options) { }
+		public ApplicationContext(DbContextOptions options) : base(options) {
+			Applications.Add(AccessClientModel.DefaultValue);
+		}
 
 		public DbSet<AccessClientModel> Applications { get; set; }
 	}

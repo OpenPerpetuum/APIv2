@@ -58,7 +58,7 @@ namespace OpenPerpetuum.Api
 				.AddEntityFrameworkInMemoryDatabase()
 				.AddDbContext<ApplicationContext>(options => options.UseInMemoryDatabase(nameof(ApplicationContext)));
 
-            var openIdConnectConfig = Configuration.Get<OpenIdConnectConfiguration>();
+            var openIdConnectConfig = Configuration.GetSection("OpenIdConnect").Get<OpenIdConnectConfiguration>();
 
 			services.Configure<OpenIdConnectConfiguration>(options => Configuration.GetSection("OpenIdConnect").Bind(options));
 			services.Configure<DataProviderConfiguration>(options => Configuration.GetSection("DataProviders").Bind(options));
@@ -207,19 +207,11 @@ namespace OpenPerpetuum.Api
 			container.RegisterMvcControllers(app);
             container.RegisterMvcViewComponents(app);
 
-			// Cross-Wiring
-			// The HTTP Context Accessor requires special wiring. Don't enable unless we *really* need it. Bad Practice.
-			// container.CrossWire<IHttpContextAccessor>(app);
-			// The CacheClient requires access to the HTTP Context Accessor.
-			// container.CrossWire<ICacheClient>(app);
+			// CrossWire Magic
+			container.AutoCrossWireAspNetComponents(app);
 
-			container.CrossWire<IOptions<DataProviderConfiguration>>(app);
-			container.CrossWire<ILoggerFactory>(app);
-            container.CrossWire<IDistributedCache>(app);
-			container.CrossWire<ApplicationContext>(app);
-			container.CrossWire<AuthorisationProvider>(app);
-            // Singleton Registrations
-            container.RegisterInstance<Func<IViewBufferScope>>(() => app.GetRequestService<IViewBufferScope>());
+			// Singleton Registrations
+			container.RegisterInstance<Func<IViewBufferScope>>(() => app.GetRequestService<IViewBufferScope>());
             container.RegisterInstance(typeof(IServiceProvider), container); // Self registration; basically enables witchcraft...
 
 			// Add Middleware here!
@@ -227,7 +219,7 @@ namespace OpenPerpetuum.Api
 
 			// Add "Other Stuff" here! (I typically use Dependency Installers rather than list all my deps here)
 			container.RegisterPerpetuumApiTypes();
-        }
+		}
 
         // This should stop the API from returning 302 redirects (attempts to present you a login page) for 401 Unauthorised
         private static Func<RedirectContext<CookieAuthenticationOptions>, Task> ReplaceRedirector(HttpStatusCode statusCode, Func<RedirectContext<CookieAuthenticationOptions>, Task> existingRedirector) =>

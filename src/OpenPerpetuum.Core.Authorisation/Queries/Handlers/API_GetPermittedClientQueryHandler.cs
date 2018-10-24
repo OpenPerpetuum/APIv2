@@ -6,7 +6,6 @@ using OpenPerpetuum.Core.Foundation.Processing;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace OpenPerpetuum.Core.Authorisation.Queries.Handlers
 {
@@ -39,7 +38,7 @@ namespace OpenPerpetuum.Core.Authorisation.Queries.Handlers
 					AdministratorName = client.AdministratorName,
 					ClientId = client.ClientId,
 					FriendlyName = client.FriendlyName,
-					RedirectUris = client.RedirectUris.Split('|').ToList().Select(ru => new Uri(ru)).ToList().AsReadOnly()
+					RedirectUri = client.RedirectUri
 				});
 
 			return clients.AsReadOnly();

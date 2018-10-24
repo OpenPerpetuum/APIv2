@@ -13,7 +13,7 @@ namespace OpenPerpetuum.Core.Authorisation.DatabaseResults
 			set;
 		}
 
-		public string RedirectUris
+		public string RedirectUri
 		{
 			get;
 			set;

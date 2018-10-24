@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace OpenPerpetuum.Core.Authorisation.Models
 {
@@ -16,17 +15,19 @@ namespace OpenPerpetuum.Core.Authorisation.Models
 					AdministratorName = "Default Value",
 					ClientId = Guid.Empty,
 					FriendlyName = "Default Value",
-					RedirectUris = new List<Uri> { new Uri("http://www.open-perpetuum.com") }.AsReadOnly()
+					RedirectUri = "http://www.open-perpetuum.com"
 				};
 			}
 		}
+
+		[Key]
 		public Guid ClientId
 		{
 			get;
 			set;
 		}
 
-		public ReadOnlyCollection<Uri> RedirectUris
+		public string RedirectUri
 		{
 			get;
 			set;

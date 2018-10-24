@@ -104,7 +104,7 @@ namespace OpenPerpetuum.Api.Controllers
 			return Redirect(viewModel.ReturnUrl);
 		}
 
-		protected virtual Task<AccessClientModel> GetApplicationAsync(string identifier, CancellationToken cancellationToken)
+		protected virtual async Task<AccessClientModel> GetApplicationAsync(string identifier, CancellationToken cancellationToken)
 		{
 			if (string.IsNullOrWhiteSpace(identifier))
 				return null;
@@ -113,7 +113,7 @@ namespace OpenPerpetuum.Api.Controllers
 				clientId = Guid.Empty;
 
 			// Retrieve the application details corresponding to the requested client_id.
-			return dbContext.Applications.Where(application => application.ClientId == clientId).SingleOrDefaultAsync(cancellationToken);
+			return await dbContext.Applications.Where(application => application.ClientId == clientId).SingleOrDefaultAsync(cancellationToken);
 		}
 	}
 }

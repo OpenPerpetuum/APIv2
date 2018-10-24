@@ -1,10 +1,12 @@
 ﻿using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
+using Microsoft.EntityFrameworkCore;
 using OpenPerpetuum.Core.Authorisation.Models;
 using OpenPerpetuum.Core.Authorisation.Queries;
 using OpenPerpetuum.Core.Foundation.Processing;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OpenPerpetuum.Api.Authorisation
@@ -12,11 +14,11 @@ namespace OpenPerpetuum.Api.Authorisation
 	// Note: This class is *always* a singleton. Don't inject scoped dependencies
 	public sealed class AuthorisationProvider : OpenIdConnectServerProvider
 	{
-		private readonly ApplicationContext database;
+		private readonly ApplicationContext dbContext;
 
-		public AuthorisationProvider(ApplicationContext database)
+		public AuthorisationProvider(ApplicationContext dbContext)
 		{
-			this.database = database;
+			this.dbContext = dbContext;
 		}
 
 		// Implement OnValidateAuthorizationRequest to support interactive flows (code/implicit/hybrid).
@@ -39,14 +41,7 @@ namespace OpenPerpetuum.Api.Authorisation
 				return; // Given that this is a protocol error I'm not too fussed about the early return
 			}
 			
-			if (!Guid.TryParse(context.ClientId, out Guid clientId)) clientId = Guid.Empty;
-
-			IQueryProcessor queryProcessor = context.HttpContext.RequestServices.GetService(typeof(IQueryProcessor)) as IQueryProcessor;
-
-			AccessClientModel accessClient = await Task.Run(() => queryProcessor.Process(new API_GetPermittedClientQuery
-			{
-				ClientId = clientId
-			})?.SingleOrDefault() ?? AccessClientModel.DefaultValue);
+			AccessClientModel accessClient = await GetApplicationAsync(context.ClientId, context.HttpContext.RequestAborted) ?? AccessClientModel.DefaultValue;
 
 			if (Equals(accessClient.ClientId, Guid.Empty))
 			{
@@ -55,27 +50,16 @@ namespace OpenPerpetuum.Api.Authorisation
 					description: "Requests from this client are not authorised");
 			}
 
-			if (string.IsNullOrWhiteSpace(context.RedirectUri))
-			{
-				if (!context.IsRejected)
-					context.Reject(
-						error: OpenIdConnectConstants.Errors.InvalidRequest,
-						description: "Required redirect_uri parameter was missing");
-			}
-
-			if (!Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri redirectUri))
+			if (!string.Equals(accessClient.RedirectUri, context.RedirectUri, StringComparison.InvariantCultureIgnoreCase))
 			{
 				if (!context.IsRejected)
 					context.Reject(
 						error: OpenIdConnectConstants.Errors.InvalidClient,
-						description: "Invalid redirect_uri");
-			}
-			else if (!accessClient.RedirectUris.Select(ru => ru.ToString()).Where(rs => string.Equals(rs, context.RedirectUri, StringComparison.InvariantCultureIgnoreCase)).Any())
-			{
-				if (!context.IsRejected)
-					context.Reject(
-						error: OpenIdConnectConstants.Errors.InvalidClient,
-						description: "Invalid redirect_uri");
+#if DEBUG
+						description: "redirect_uri mismatch");
+#else
+						description: "Requests from this client are not authorised");
+#endif
 			}
 
 			// Confirm the validation
@@ -97,6 +81,18 @@ namespace OpenPerpetuum.Api.Authorisation
 					description: "Only authorisation code grant types are supported");
 
 			return Task.FromResult(0);
+		}
+
+		private async Task<AccessClientModel> GetApplicationAsync(string identifier, CancellationToken cancellationToken)
+		{
+			if (string.IsNullOrWhiteSpace(identifier))
+				return null;
+
+			if (!Guid.TryParse(identifier, out Guid clientId))
+				clientId = Guid.Empty;
+
+			// Retrieve the application details corresponding to the requested client_id.
+			return await dbContext.Applications.Where(application => application.ClientId == clientId).SingleOrDefaultAsync(cancellationToken);
 		}
 	}
 }
