@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using AspNet.Security.OAuth.Validation;
-using AspNet.Security.OpenIdConnect.Server;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
@@ -21,16 +15,22 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
 using Microsoft.Extensions.Options;
+using OpenPerpetuum.Api.Configuration;
 using OpenPerpetuum.Api.DependencyInstallers;
+using OpenPerpetuum.Core.DataServices;
 using OpenPerpetuum.Core.Extensions;
 using SimpleInjector;
 using SimpleInjector.Integration.AspNetCore.Mvc;
 using SimpleInjector.Lifestyles;
-using StackExchange.Redis.Extensions.Core;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace OpenPerpetuum.Api
 {
-    public class Startup
+	public class Startup
     {
         private readonly Container container = new Container();
         private IConfigurationRoot Configuration { get; }
@@ -54,10 +54,31 @@ namespace OpenPerpetuum.Api
 
             services.AddSingleton<IControllerActivator>(new SimpleInjectorControllerActivator(container));
             services.AddSingleton<IViewComponentActivator>(new SimpleInjectorViewComponentActivator(container));
+			var openIdConnectConfig = Configuration.Get<Configuration.OpenIdConnectConfiguration>();
 
-            services.AddAuthentication();
+			services.Configure<DataProviderConfiguration>(options => Configuration.GetSection("DataProviders").Bind(options));
 
-			services.AddCors(options =>
+			services.AddAuthentication(sharedOptions =>
+				{
+					sharedOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+					sharedOptions.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+					sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+				})
+				.AddCookie()
+				.AddOAuthValidation()
+				.AddOpenIdConnectServer(config =>
+				{
+					config.Provider = new AuthorisationProvider();
+					config.AuthorizationEndpointPath = openIdConnectConfig.AuthorisationPath;
+					config.TokenEndpointPath = openIdConnectConfig.TokenPath;
+					config.AllowInsecureHttp = openIdConnectConfig.AllowInsecureHttp;
+	#if ENABLE_JWT // Although this is in config I'll disable the compilation until the security platform is being written and tested
+					if (openIdConnectConfig.EnableJWT)
+						config.AccessTokenHandler = new JwtSecurityTokenHandler();
+	#endif
+				});
+
+				services.AddCors(options =>
 			{
 				options.AddPolicy("development", policy =>
 				{
@@ -69,35 +90,12 @@ namespace OpenPerpetuum.Api
 				});
 			});
 
-            // We can replace this with an API developer key auth system if we want. For now, use cookies
-            services
-                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options =>
-                {
-                    options.Events.OnRedirectToAccessDenied = ReplaceRedirector(HttpStatusCode.Forbidden, options.Events.OnRedirectToAccessDenied);
-                    options.Events.OnRedirectToLogin = ReplaceRedirector(HttpStatusCode.Unauthorized, options.Events.OnRedirectToLogin);
-                    options.Cookie.Name = ".OpenPerpetuum.APIv2.Authorisation";
-                    options.Cookie.HttpOnly = true;
-#if RELEASE
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                    options.Cookie.SameSite = SameSiteMode.Strict;
-                    options.SlidingExpiration = false;
-                    options.Cookie.Expiration = TimeSpan.FromHours(2);
-#else
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-                    options.Cookie.SameSite = SameSiteMode.None;
-                    options.SlidingExpiration = true;
-                    options.Cookie.Expiration = TimeSpan.FromHours(24);
-#endif
-                    options.Validate();
-                });
-
 			services.AddSession(sessionOptions =>
 			{
 				sessionOptions.Cookie.Name = ".OpenPerpetuum.APIv2.Session";
 				sessionOptions.Cookie.HttpOnly = true;
 #if RELEASE
-				sessionOptions.IdleTimeout = TimeSpan.FromMinutes(10);
+				sessionOptions.IdleTimeout = TimeSpan.FromHours(2);
 				sessionOptions.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 				sessionOptions.Cookie.SameSite = SameSiteMode.Strict;
 #else
@@ -153,9 +151,9 @@ namespace OpenPerpetuum.Api
                     await next();
                 }
             });
+			
+			bool isDevMode = false, isHsts = false, isHttps = false;
 
-            bool isDevMode = false, isHsts = false, isHttps = false;
-            
             if (env.IsDevelopment())
             {
                 isDevMode = true;
@@ -166,9 +164,9 @@ namespace OpenPerpetuum.Api
             {
                 isHsts = true;
                 app.UseHsts();
-            }
-            app.UseHttpsRedirection();
-            isHttps = true;
+				app.UseHttpsRedirection();
+				isHttps = true;
+            }            
 
             startupLog.LogInformation($"********************\n      Development mode: {isDevMode.ToEnabledString()}\n      HSTS mode:\t{isHsts.ToEnabledString()}\n      HTTPS mode:\t{isHttps.ToEnabledString()}\n      ********************");
 
@@ -188,9 +186,8 @@ namespace OpenPerpetuum.Api
             logger.LogInformation("Starting container initialisation");
 
             container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
-
-            // MVC Autowire
-            container.RegisterMvcControllers(app);
+			// MVC Autowire
+			container.RegisterMvcControllers(app);
             container.RegisterMvcViewComponents(app);
 
 			// Cross-Wiring
@@ -199,6 +196,7 @@ namespace OpenPerpetuum.Api
 			// The CacheClient requires access to the HTTP Context Accessor.
 			// container.CrossWire<ICacheClient>(app);
 
+			container.CrossWire<IOptions<DataProviderConfiguration>>(app);
 			container.CrossWire<ILoggerFactory>(app);
             container.CrossWire<IDistributedCache>(app);
             

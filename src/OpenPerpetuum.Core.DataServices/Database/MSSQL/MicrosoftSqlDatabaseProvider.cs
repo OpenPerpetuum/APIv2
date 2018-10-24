@@ -15,10 +15,21 @@ namespace OpenPerpetuum.Core.DataServices.Database.MSSQL
 		public string ProviderName { get; }
 		public string ConnectionString { get; }
 
+		public static string CreateConnectionString(string username, string password, string server, string defaultDatabase)
+		{
+			return $"Server={server};Database={defaultDatabase};Persist Security Info=False;User ID={username};Password={password};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;";
+		}
+
 		public MicrosoftSqlDatabaseProvider(string providerName, string connectionString)
 		{
 			ProviderName = providerName;
 			ConnectionString = connectionString;
+		}
+
+		public MicrosoftSqlDatabaseProvider(string providerName, string username, string password, string server, string defaultDatabase)
+		{
+			ProviderName = providerName;
+			ConnectionString = CreateConnectionString(username, password, server, defaultDatabase);
 		}
 
 		public IResult<TResultObject> ExecuteProcedure<TResultObject>(string procedureName, IDictionary<string, object> inputParameters) where TResultObject : DatabaseResult, new()

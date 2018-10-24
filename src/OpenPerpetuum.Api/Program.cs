@@ -12,6 +12,9 @@ namespace OpenPerpetuum.Api
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+#if DEBUG   
+				.UseEnvironment("Development")
+#endif
+				.UseStartup<Startup>();
     }
 }
