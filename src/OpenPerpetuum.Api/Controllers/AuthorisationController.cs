@@ -52,5 +52,12 @@ namespace OpenPerpetuum.Api.Controllers
 				Scope = request.Scope
 			});
 		}
+
+		[HttpGet("~/authorisation/login")]
+		public IActionResult Login(string returnUrl = "")
+		{
+			var model = new LoginViewModel { ReturnUrl = returnUrl };
+			return View(model);
+		}
 	}
 }

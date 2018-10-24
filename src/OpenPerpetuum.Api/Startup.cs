@@ -187,10 +187,10 @@ namespace OpenPerpetuum.Api
 
             startupLog.LogInformation($"********************\n      Development mode: {isDevMode.ToEnabledString()}\n      HSTS mode:\t{isHsts.ToEnabledString()}\n      HTTPS mode:\t{isHttps.ToEnabledString()}\n      ********************");
 
-			app
-				.UseAuthentication()
-				.UseSession()
-				.UseMvc();
+			app.UseAuthentication();
+			app.UseSession();
+			app.UseStaticFiles();
+			app.UseMvc();
 
 			UriParser.Register(new GenericUriParser(GenericUriParserOptions.GenericAuthority), "pack", -1); // Don't fail with Azure packed claims
 

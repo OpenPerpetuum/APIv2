@@ -1,0 +1,23 @@
+﻿@model OpenPerpetuum.Api.Models.Authorisation.LoginViewModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Login</title>
+</head>
+<body>
+
+<div>
+    <h2>Login to Open Perpetuum</h2>
+	<form method="post" asp-controller="Authorisation" asp-action="Login" asp-route-returnurl="@Model.ReturnUrl">
+
+	</form>
+</div>
+</body>
+</html>
