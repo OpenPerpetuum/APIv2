@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using AspNet.Security.OAuth.Validation;
+using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -52,6 +54,8 @@ namespace OpenPerpetuum.Api
 
             services.AddSingleton<IControllerActivator>(new SimpleInjectorControllerActivator(container));
             services.AddSingleton<IViewComponentActivator>(new SimpleInjectorViewComponentActivator(container));
+
+            services.AddAuthentication();
 
 			services.AddCors(options =>
 			{
@@ -151,7 +155,7 @@ namespace OpenPerpetuum.Api
             });
 
             bool isDevMode = false, isHsts = false, isHttps = false;
-
+            
             if (env.IsDevelopment())
             {
                 isDevMode = true;
