@@ -1,23 +1,22 @@
-﻿@model OpenPerpetuum.Api.Models.Authorisation.LoginViewModel
+﻿@using OpenPerpetuum.Api.Models.Authorisation;
 
-@{
-    Layout = null;
-}
+@model LoginViewModel
 
-<!DOCTYPE html>
-
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>Login</title>
-</head>
-<body>
-
-<div>
-    <h2>Login to Open Perpetuum</h2>
-	<form method="post" asp-controller="Authorisation" asp-action="Login" asp-route-returnurl="@Model.ReturnUrl">
-
+<div class="jumbotron">
+    <h2 class="display-4">Open Perpetuum API Authorisation</h2>
+	<p class="lead">By logging in here you may be giving permission to a third-party application to access your account. Stay vigilant!</p>
+	<hr class="my-4" />
+	<form enctype="application/x-www-form-urlencoded" method="post">
+		@Html.AntiForgeryToken()
+		<div class="form-group">
+			<label for="inputUsername">Username</label>
+			<input class="form-control" id="inputUsername" type="text" placeholder="Enter email" />
+		</div>
+		<div class="form-group">
+			<label for="inputPassword">Password</label>
+			<input class="form-control" id="inputPassword" type="password" placeholder="Password"/>
+		</div>
+		<input class="btn btn-primary" name="submit.Login" type="submit" value="Login" />
+		<input class="btn btn-danger" name="submit.Cancel" type="submit" value="Cancel" />
 	</form>
 </div>
-</body>
-</html>
