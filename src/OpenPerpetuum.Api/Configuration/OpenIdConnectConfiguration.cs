@@ -12,8 +12,19 @@ namespace OpenPerpetuum.Api.Configuration
 			get;
 			set;
 		}
+		public string LogoutPath
+		{
+			get;
+			set;
+		}
 
 		public string TokenPath
+		{
+			get;
+			set;
+		}
+
+		public string UserInfoPath
 		{
 			get;
 			set;

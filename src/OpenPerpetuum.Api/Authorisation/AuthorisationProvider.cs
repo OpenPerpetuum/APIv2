@@ -1,18 +1,13 @@
 ﻿using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using OpenPerpetuum.Core.Authorisation.Models;
 using OpenPerpetuum.Core.Authorisation.Queries;
-using OpenPerpetuum.Core.DataServices.Database.Interfaces;
 using OpenPerpetuum.Core.Foundation.Processing;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OpenPerpetuum.Api
+namespace OpenPerpetuum.Api.Authorisation
 {
 	// Note: This class is *always* a singleton. Don't inject scoped dependencies
 	public sealed class AuthorisationProvider : OpenIdConnectServerProvider

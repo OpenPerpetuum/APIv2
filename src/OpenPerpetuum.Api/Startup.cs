@@ -9,12 +9,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
 using Microsoft.Extensions.Options;
+using OpenPerpetuum.Api.Authorisation;
 using OpenPerpetuum.Api.Configuration;
 using OpenPerpetuum.Api.DependencyInstallers;
 using OpenPerpetuum.Core.DataServices;
@@ -49,36 +51,49 @@ namespace OpenPerpetuum.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddOptions();
 
-            services.AddSingleton<IControllerActivator>(new SimpleInjectorControllerActivator(container));
-            services.AddSingleton<IViewComponentActivator>(new SimpleInjectorViewComponentActivator(container));
-			var openIdConnectConfig = Configuration.Get<Configuration.OpenIdConnectConfiguration>();
+			services
+				.AddEntityFrameworkInMemoryDatabase()
+				.AddDbContext<ApplicationContext>(options => options.UseInMemoryDatabase(nameof(ApplicationContext)));
 
+            var openIdConnectConfig = Configuration.Get<OpenIdConnectConfiguration>();
+
+			services.Configure<OpenIdConnectConfiguration>(options => Configuration.GetSection("OpenIdConnect").Bind(options));
 			services.Configure<DataProviderConfiguration>(options => Configuration.GetSection("DataProviders").Bind(options));
 
 			services.AddAuthentication(sharedOptions =>
-				{
-					sharedOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-					sharedOptions.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-					sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-				})
-				.AddCookie()
-				.AddOAuthValidation()
-				.AddOpenIdConnectServer(config =>
-				{
-					config.Provider = new AuthorisationProvider();
-					config.AuthorizationEndpointPath = openIdConnectConfig.AuthorisationPath;
-					config.TokenEndpointPath = openIdConnectConfig.TokenPath;
-					config.AllowInsecureHttp = openIdConnectConfig.AllowInsecureHttp;
-	#if ENABLE_JWT // Although this is in config I'll disable the compilation until the security platform is being written and tested
-					if (openIdConnectConfig.EnableJWT)
-						config.AccessTokenHandler = new JwtSecurityTokenHandler();
-	#endif
-				});
+			{
+				sharedOptions.DefaultScheme = "ServerCookie";
+			})
+			.AddCookie("ServerCookie", options =>
+			{
+				options.Cookie.Name = CookieAuthenticationDefaults.CookiePrefix + "ServerCookie";
+				options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+				options.LoginPath = new PathString("/authorisation/login");
+				options.LogoutPath = new PathString("/authorisation/logout");
+			})
+			.AddOAuthValidation()
+			.AddOpenIdConnectServer(config =>
+			{
+				config.ProviderType = typeof(AuthorisationProvider);
+				config.AuthorizationEndpointPath = openIdConnectConfig.AuthorisationPath;
+				config.LogoutEndpointPath = openIdConnectConfig.LogoutPath;
+				config.TokenEndpointPath = openIdConnectConfig.TokenPath;
+				config.UserinfoEndpointPath = openIdConnectConfig.UserInfoPath;
 
-				services.AddCors(options =>
+#if DEBUG // Development stuff
+				config.ApplicationCanDisplayErrors = true;
+				config.AllowInsecureHttp = openIdConnectConfig.AllowInsecureHttp;
+#endif
+			});
+
+			services.AddScoped<AuthorisationProvider>();
+
+			services.AddSingleton<IControllerActivator>(new SimpleInjectorControllerActivator(container));
+			services.AddSingleton<IViewComponentActivator>(new SimpleInjectorViewComponentActivator(container));
+
+			services.AddCors(options =>
 			{
 				options.AddPolicy("development", policy =>
 				{
@@ -118,6 +133,8 @@ namespace OpenPerpetuum.Api
                     });
 #endif
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+			services.AddDistributedMemoryCache();
 
             services.EnableSimpleInjectorCrossWiring(container);
             services.UseSimpleInjectorAspNetRequestScoping(container);
