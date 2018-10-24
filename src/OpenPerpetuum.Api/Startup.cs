@@ -52,6 +52,7 @@ namespace OpenPerpetuum.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
+			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
 			services
 				.AddEntityFrameworkInMemoryDatabase()
@@ -188,7 +189,6 @@ namespace OpenPerpetuum.Api
             startupLog.LogInformation($"********************\n      Development mode: {isDevMode.ToEnabledString()}\n      HSTS mode:\t{isHsts.ToEnabledString()}\n      HTTPS mode:\t{isHttps.ToEnabledString()}\n      ********************");
 
 			app.UseAuthentication();
-			app.UseSession();
 			app.UseStaticFiles();
 			app.UseMvc();
 
@@ -216,7 +216,8 @@ namespace OpenPerpetuum.Api
 			container.CrossWire<IOptions<DataProviderConfiguration>>(app);
 			container.CrossWire<ILoggerFactory>(app);
             container.CrossWire<IDistributedCache>(app);
-            
+			container.CrossWire<ApplicationContext>(app);
+			container.CrossWire<AuthorisationProvider>(app);
             // Singleton Registrations
             container.RegisterInstance<Func<IViewBufferScope>>(() => app.GetRequestService<IViewBufferScope>());
             container.RegisterInstance(typeof(IServiceProvider), container); // Self registration; basically enables witchcraft...

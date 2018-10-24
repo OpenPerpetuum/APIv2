@@ -4,18 +4,19 @@
 
 <div class="jumbotron">
     <h2 class="display-4">Open Perpetuum API Authorisation</h2>
-	<p class="lead">By logging in here you may be giving permission to a third-party application to access your account. Stay vigilant!</p>
+	<p class="lead">By logging in here you may be giving permission for a third-party application to access your account. Stay vigilant!</p>
 	<hr class="my-4" />
-	<form enctype="application/x-www-form-urlencoded" method="post">
+	<form method="post">
 		@Html.AntiForgeryToken()
 		<div class="form-group">
-			<label for="inputUsername">Username</label>
-			<input class="form-control" id="inputUsername" type="text" placeholder="Enter email" />
+			<label for="Username">Username</label>
+			<input class="form-control" id="Username" name="Username" type="text" placeholder="Enter email" />
 		</div>
 		<div class="form-group">
-			<label for="inputPassword">Password</label>
-			<input class="form-control" id="inputPassword" type="password" placeholder="Password"/>
+			<label for="Password">Password</label>
+			<input class="form-control" id="Password" type="password" name="Password" placeholder="Password"/>
 		</div>
+		<input type="hidden" id="ReturnUrl" name="ReturnUrl" value="@Model.ReturnUrl" />
 		<input class="btn btn-primary" name="submit.Login" type="submit" value="Login" />
 		<input class="btn btn-danger" name="submit.Cancel" type="submit" value="Cancel" />
 	</form>

@@ -1,11 +1,8 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using OpenPerpetuum.Api.Configuration;
-using OpenPerpetuum.Core.DataServices;
 using OpenPerpetuum.Core.DataServices.Context;
 using OpenPerpetuum.Core.DataServices.CQRS;
 using OpenPerpetuum.Core.DataServices.Database.Interfaces;
-using OpenPerpetuum.Core.DataServices.Database.MSSQL;
 using OpenPerpetuum.Core.Foundation.Processing;
 using SimpleInjector;
 using System;
@@ -33,13 +30,13 @@ namespace OpenPerpetuum.Api.DependencyInstallers
 			container.Register<ICoreContext, CoreContext>();
 		}
 
-		private static IDataContext GetPerpetuumDatabases(Container container)
+		private static IDataContext GetPerpetuumDatabases(IServiceProvider container)
 		{
 			IEnumerable<Assembly> asm = AssemblyLoader.Instance.RuntimeAssemblies;
 			var providers = asm.SelectMany(a => a.DefinedTypes).Where(type => typeof(IDatabaseProvider).IsAssignableFrom(type.AsType()));
 
 			IDataContext dataContext = new DataContext();
-			var databaseConfigurations = container.GetInstance<IOptions<DataProviderConfiguration>>();
+			var databaseConfigurations = container.GetService(typeof(IOptions<DataProviderConfiguration>)) as IOptions<DataProviderConfiguration>;
 
 			foreach (var dbConfig in databaseConfigurations.Value.Databases)
 			{

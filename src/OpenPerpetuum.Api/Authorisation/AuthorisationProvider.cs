@@ -12,6 +12,13 @@ namespace OpenPerpetuum.Api.Authorisation
 	// Note: This class is *always* a singleton. Don't inject scoped dependencies
 	public sealed class AuthorisationProvider : OpenIdConnectServerProvider
 	{
+		private readonly ApplicationContext database;
+
+		public AuthorisationProvider(ApplicationContext database)
+		{
+			this.database = database;
+		}
+
 		// Implement OnValidateAuthorizationRequest to support interactive flows (code/implicit/hybrid).
 		public override async Task ValidateAuthorizationRequest(ValidateAuthorizationRequestContext context)
 		{
