@@ -1,0 +1,3 @@
+<PatchControl>
+	<SchemaPatch filename="SchemaPatch1_001.sql" version="1.001" dependency="1.000" />
+</PatchControl>

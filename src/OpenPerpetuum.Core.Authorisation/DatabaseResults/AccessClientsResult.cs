@@ -36,6 +36,18 @@ namespace OpenPerpetuum.Core.Authorisation.DatabaseResults
 			get;
 			set;
 		}
+
+		public bool IsAdministratorApp
+		{
+			get;
+			set;
+		}
+
+		public string Secret
+		{
+			get;
+			set;
+		}
 	}
 	#endregion
 	

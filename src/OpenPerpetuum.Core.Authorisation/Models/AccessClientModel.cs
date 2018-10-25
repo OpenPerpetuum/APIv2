@@ -15,7 +15,9 @@ namespace OpenPerpetuum.Core.Authorisation.Models
 					AdministratorName = "Default Value",
 					ClientId = Guid.Empty,
 					FriendlyName = "Default Value",
-					RedirectUri = "http://www.open-perpetuum.com"
+					RedirectUri = "http://www.open-perpetuum.com",
+					Secret = string.Empty,
+					IsAdministratorApp = false
 				};
 			}
 		}
@@ -46,6 +48,18 @@ namespace OpenPerpetuum.Core.Authorisation.Models
 		}
 
 		public string AdministratorContactAddress
+		{
+			get;
+			set;
+		}
+
+		public string Secret
+		{
+			get;
+			set;
+		}
+
+		public bool IsAdministratorApp
 		{
 			get;
 			set;

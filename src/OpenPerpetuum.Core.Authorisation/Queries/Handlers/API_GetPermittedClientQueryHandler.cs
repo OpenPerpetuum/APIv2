@@ -21,7 +21,7 @@ namespace OpenPerpetuum.Core.Authorisation.Queries.Handlers
 		public ReadOnlyCollection<AccessClientModel> Handle(API_GetPermittedClientQuery query)
 		{
 			IResult<AccessClientsResult> result = dataProvider.ExecuteProcedure<AccessClientsResult>(
-				"GetAccessClients",
+				"Authorisation.GetAccessClients",
 				new DbParameters
 				{
 					{ "ClientId", (object)query.ClientId ?? DBNull.Value }
@@ -38,7 +38,9 @@ namespace OpenPerpetuum.Core.Authorisation.Queries.Handlers
 					AdministratorName = client.AdministratorName,
 					ClientId = client.ClientId,
 					FriendlyName = client.FriendlyName,
-					RedirectUri = client.RedirectUri
+					RedirectUri = client.RedirectUri,
+					IsAdministratorApp = client.IsAdministratorApp,
+					Secret = client.Secret
 				});
 
 			return clients.AsReadOnly();
