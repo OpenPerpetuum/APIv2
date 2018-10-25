@@ -32,7 +32,8 @@ namespace OpenPerpetuum.Api.Authorisation
 			 * authorisation process, the more of the process you get correct, the longer it will take to return.
 			 * Ideally, the time to return should always stay the same.
 			 */
-			
+			bool isError = false;
+
 			if (!context.Request.IsAuthorizationCodeFlow())
 			{
 				context.Reject(
@@ -48,11 +49,12 @@ namespace OpenPerpetuum.Api.Authorisation
 				context.Reject(
 					error: OpenIdConnectConstants.Errors.InvalidClient,
 					description: "Requests from this client are not authorised");
+				isError = true;
 			}
 
 			if (!string.Equals(accessClient.RedirectUri, context.RedirectUri, StringComparison.InvariantCultureIgnoreCase))
 			{
-				if (!context.IsRejected)
+				if (!isError)
 					context.Reject(
 						error: OpenIdConnectConstants.Errors.InvalidClient,
 #if DEBUG
@@ -60,10 +62,10 @@ namespace OpenPerpetuum.Api.Authorisation
 #else
 						description: "Requests from this client are not authorised");
 #endif
+				isError = true;
 			}
 
-			// Confirm the validation
-			if (!context.IsRejected)
+			if (!isError)
 				context.Validate();
 
 			return;

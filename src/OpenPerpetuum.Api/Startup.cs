@@ -19,6 +19,7 @@ using Microsoft.Extensions.Options;
 using OpenPerpetuum.Api.Authorisation;
 using OpenPerpetuum.Api.Configuration;
 using OpenPerpetuum.Api.DependencyInstallers;
+using OpenPerpetuum.Core.Authorisation.Models;
 using OpenPerpetuum.Core.DataServices;
 using OpenPerpetuum.Core.Extensions;
 using SimpleInjector;
@@ -161,15 +162,32 @@ namespace OpenPerpetuum.Api
             InitialiseContainer(app, loggerFactory);
             container.Verify();
 
-            // Ensure all requests are scoped for the container
-            app.Use(async (context, next) =>
+			// Ensure all requests are scoped for the container
+			app.Use(async (context, next) =>
             {
                 using (AsyncScopedLifestyle.BeginScope(container))
                 {
                     await next();
                 }
             });
-			
+
+			using (AsyncScopedLifestyle.BeginScope(container))
+			{
+				var dbContext = container.GetRequiredService<ApplicationContext>();
+				dbContext.AddRange(new[]
+				{
+					AccessClientModel.DefaultValue,
+					new AccessClientModel
+					{
+						AdministratorContactAddress = "admin@email",
+						AdministratorName = "Development",
+						ClientId = Guid.Parse("8d24b83a-f04b-483d-8eb7-efd98ac91a9d"),
+						FriendlyName = "Development Postman Test",
+						RedirectUri = "https://www.getpostman.com/oauth2/callback"
+					}
+				});
+				dbContext.SaveChanges();
+			}
 			bool isDevMode = false, isHsts = false, isHttps = false;
 
             if (env.IsDevelopment())
