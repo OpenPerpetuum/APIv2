@@ -1,5 +1,6 @@
 ﻿using OpenPerpetuum.Core.DataServices.Database;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace OpenPerpetuum.Core.Authorisation.DatabaseResults
@@ -53,7 +54,7 @@ namespace OpenPerpetuum.Core.Authorisation.DatabaseResults
 	
 	internal class AccessClientsResult : DatabaseResult
 	{
-		public ReadOnlyCollection<AccessClientData> Clients => ((ResultSet<AccessClientData>)Results[0])?.Data;
+		public ReadOnlyCollection<AccessClientData> Clients => ((ResultSet<AccessClientData>)Results[0])?.Data ?? new List<AccessClientData>().AsReadOnly();
 
 		public AccessClientsResult()
 		{

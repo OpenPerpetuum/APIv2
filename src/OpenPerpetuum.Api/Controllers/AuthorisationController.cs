@@ -1,39 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
-using AspNet.Security.OpenIdConnect.Extensions;
+﻿using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
-using OpenPerpetuum.Api.Authorisation;
+using OpenPerpetuum.Api.Configuration;
 using OpenPerpetuum.Api.DependencyInstallers;
 using OpenPerpetuum.Api.Models.Authorisation;
 using OpenPerpetuum.Core.Authorisation.Models;
 using OpenPerpetuum.Core.Authorisation.Queries;
 using OpenPerpetuum.Core.Foundation.Processing;
 using OpenPerpetuum.Core.Foundation.Security;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OpenPerpetuum.Api.Controllers
 {
 	public class AuthorisationController : ApiControllerBase
 	{
-		private readonly ApplicationContext dbContext;
+		private readonly IMemoryCache cache;
 
-		public AuthorisationController(ICoreContext coreContext, ApplicationContext context) : base(coreContext)
+		public AuthorisationController(ICoreContext coreContext, IMemoryCache cache) : base(coreContext)
 		{
-			dbContext = context;
+			this.cache = cache;
 		}
 
 		[Authorize, HttpGet("~/connect/authorise")]
-		public async Task<IActionResult> Authorise(CancellationToken cancellationToken)
+		public IActionResult Authorise(CancellationToken cancellationToken)
 		{
 			// Extract the auth request from the context
 			var response = HttpContext.GetOpenIdConnectResponse();
@@ -54,7 +55,7 @@ namespace OpenPerpetuum.Api.Controllers
 					ErrorDescription = "Internal error"
 				});
 
-			AccessClientModel accessClient = await GetApplicationAsync(request.ClientId, cancellationToken) ?? AccessClientModel.DefaultValue;
+			AccessClientModel accessClient = GetApplication(request.ClientId) ?? AccessClientModel.DefaultValue;
 
 			if (accessClient.ClientId == Guid.Empty)
 				return View("Error", new ErrorViewModel
@@ -68,7 +69,7 @@ namespace OpenPerpetuum.Api.Controllers
 
 		[Authorize, FormValueRequired("submit.Accept")]
 		[HttpPost("~/connect/authorise"), ValidateAntiForgeryToken]
-		public async Task<IActionResult> Accept(CancellationToken cancellationToken)
+		public IActionResult Accept(CancellationToken cancellationToken)
 		{
 			var response = HttpContext.GetOpenIdConnectResponse();
 			if (response != null)
@@ -104,7 +105,7 @@ namespace OpenPerpetuum.Api.Controllers
 					OpenIdConnectConstants.Destinations.AccessToken,
 					OpenIdConnectConstants.Destinations.IdentityToken));
 
-			var application = await GetApplicationAsync(request.ClientId, cancellationToken);
+			var application = GetApplication(request.ClientId);
 			if (application == null)
 			{
 				return View("Error", new OpenIdConnectResponse
@@ -229,7 +230,7 @@ namespace OpenPerpetuum.Api.Controllers
 			return Redirect(viewModel.ReturnUrl);
 		}
 
-		protected virtual async Task<AccessClientModel> GetApplicationAsync(string identifier, CancellationToken cancellationToken)
+		private AccessClientModel GetApplication(string identifier)
 		{
 			if (string.IsNullOrWhiteSpace(identifier))
 				return null;
@@ -237,8 +238,11 @@ namespace OpenPerpetuum.Api.Controllers
 			if (!Guid.TryParse(identifier, out Guid clientId))
 				clientId = Guid.Empty;
 
+			if (!cache.TryGetValue(CacheKeys.AccessClients, out ReadOnlyCollection<AccessClientModel> applications) || applications == null || applications.Count == 0)
+				return AccessClientModel.DefaultValue;
+
 			// Retrieve the application details corresponding to the requested client_id.
-			return await dbContext.Applications.Where(application => application.ClientId == clientId).SingleOrDefaultAsync(cancellationToken);
+			return applications.SingleOrDefault(ap => ap.ClientId == clientId) ?? AccessClientModel.DefaultValue;
 		}
 	}
 }

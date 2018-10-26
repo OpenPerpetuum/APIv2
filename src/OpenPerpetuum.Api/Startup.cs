@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -20,15 +21,19 @@ using OpenPerpetuum.Api.Authorisation;
 using OpenPerpetuum.Api.Configuration;
 using OpenPerpetuum.Api.DependencyInstallers;
 using OpenPerpetuum.Core.Authorisation.Models;
+using OpenPerpetuum.Core.Authorisation.Queries;
 using OpenPerpetuum.Core.DataServices;
 using OpenPerpetuum.Core.Extensions;
+using OpenPerpetuum.Core.Foundation.Processing;
 using SimpleInjector;
 using SimpleInjector.Integration.AspNetCore.Mvc;
 using SimpleInjector.Lifestyles;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OpenPerpetuum.Api
@@ -55,15 +60,11 @@ namespace OpenPerpetuum.Api
             services.AddOptions();
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-			services
-				.AddEntityFrameworkInMemoryDatabase()
-				.AddDbContext<ApplicationContext>(options => options.UseInMemoryDatabase(nameof(ApplicationContext)));
-
             var openIdConnectConfig = Configuration.GetSection("OpenIdConnect").Get<OpenIdConnectConfiguration>();
 
 			services.Configure<OpenIdConnectConfiguration>(options => Configuration.GetSection("OpenIdConnect").Bind(options));
 			services.Configure<DataProviderConfiguration>(options => Configuration.GetSection("DataProviders").Bind(options));
-
+			
 			services.AddAuthentication(sharedOptions =>
 			{
 				sharedOptions.DefaultScheme = "ServerCookie";
@@ -136,6 +137,7 @@ namespace OpenPerpetuum.Api
 #endif
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
+			services.AddMemoryCache();
 			services.AddDistributedMemoryCache();
 
             services.EnableSimpleInjectorCrossWiring(container);
@@ -143,7 +145,7 @@ namespace OpenPerpetuum.Api
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime applicationLifetime)
         {
             // Event log is only support on Windows systems
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
@@ -171,23 +173,6 @@ namespace OpenPerpetuum.Api
                 }
             });
 
-			using (AsyncScopedLifestyle.BeginScope(container))
-			{
-				var dbContext = container.GetRequiredService<ApplicationContext>();
-				dbContext.AddRange(new[]
-				{
-					AccessClientModel.DefaultValue,
-					new AccessClientModel
-					{
-						AdministratorContactAddress = "admin@email",
-						AdministratorName = "Development",
-						ClientId = Guid.Parse("8d24b83a-f04b-483d-8eb7-efd98ac91a9d"),
-						FriendlyName = "Development Postman Test",
-						RedirectUri = "https://www.getpostman.com/oauth2/callback"
-					}
-				});
-				dbContext.SaveChanges();
-			}
 			bool isDevMode = false, isHsts = false, isHttps = false;
 
             if (env.IsDevelopment())
@@ -209,6 +194,10 @@ namespace OpenPerpetuum.Api
 			app.UseAuthentication();
 			app.UseStaticFiles();
 			app.UseMvc();
+			CancellationTokenSource tokenSource = new CancellationTokenSource();
+			Task.Run(() => RunPeriodically(() => PopulateApplications(container.GetRequiredService<IMemoryCache>(), container.GetRequiredService<IQueryProcessor>()), TimeSpan.FromMinutes(3), tokenSource.Token));
+
+			applicationLifetime.ApplicationStopping.Register(() => tokenSource.Cancel());
 
 			UriParser.Register(new GenericUriParser(GenericUriParserOptions.GenericAuthority), "pack", -1); // Don't fail with Azure packed claims
 
@@ -239,16 +228,21 @@ namespace OpenPerpetuum.Api
 			container.RegisterPerpetuumApiTypes();
 		}
 
-        // This should stop the API from returning 302 redirects (attempts to present you a login page) for 401 Unauthorised
-        private static Func<RedirectContext<CookieAuthenticationOptions>, Task> ReplaceRedirector(HttpStatusCode statusCode, Func<RedirectContext<CookieAuthenticationOptions>, Task> existingRedirector) =>
-            context =>
-            {
-                if (context.Request.Path.StartsWithSegments("/api"))
-                {
-                    context.Response.StatusCode = (int)statusCode;
-                    return Task.CompletedTask;
-                }
-                return existingRedirector(context);
-            };
-    }
+		private async Task RunPeriodically(Action action, TimeSpan interval, CancellationToken token)
+		{
+			while(true)
+			{
+				action();
+				await Task.Delay(interval, token);
+			}
+		}
+
+		private void PopulateApplications(IMemoryCache dbContext, IQueryProcessor queryProcessor)
+		{
+			dbContext.Remove(CacheKeys.AccessClients);
+
+			ReadOnlyCollection<AccessClientModel> applications = queryProcessor.Process(new API_GetPermittedClientQuery { ClientId = null }) ?? new List<AccessClientModel>().AsReadOnly();
+			dbContext.Set(CacheKeys.AccessClients, applications);
+		}
+	}
 }

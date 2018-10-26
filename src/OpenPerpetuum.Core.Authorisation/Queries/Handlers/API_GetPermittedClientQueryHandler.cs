@@ -4,8 +4,8 @@ using OpenPerpetuum.Core.DataServices.Database;
 using OpenPerpetuum.Core.DataServices.Database.Interfaces;
 using OpenPerpetuum.Core.Foundation.Processing;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace OpenPerpetuum.Core.Authorisation.Queries.Handlers
 {
@@ -29,10 +29,7 @@ namespace OpenPerpetuum.Core.Authorisation.Queries.Handlers
 
 			result.ValidateResult();
 
-			var clients = new List<AccessClientModel>();
-
-			foreach (var client in result.Data.Clients)
-				clients.Add(new AccessClientModel
+			var clients = result.Data.Clients.Select(client => new AccessClientModel
 				{
 					AdministratorContactAddress = client.AdministratorContactAddress,
 					AdministratorName = client.AdministratorName,
@@ -41,7 +38,7 @@ namespace OpenPerpetuum.Core.Authorisation.Queries.Handlers
 					RedirectUri = client.RedirectUri,
 					IsAdministratorApp = client.IsAdministratorApp,
 					Secret = client.Secret
-				});
+				}).ToList();
 
 			return clients.AsReadOnly();
 		}

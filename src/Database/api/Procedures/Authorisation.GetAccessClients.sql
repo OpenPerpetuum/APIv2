@@ -15,4 +15,4 @@ select
 	SecretKey,
 	IsAdministratorApp
 from AccessClient
-where (@ClientId = null or ClientId = @ClientId);
+where (@ClientId is null or ClientId = @ClientId);

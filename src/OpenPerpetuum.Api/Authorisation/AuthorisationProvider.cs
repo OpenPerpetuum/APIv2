@@ -1,12 +1,11 @@
 ﻿using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using OpenPerpetuum.Api.Configuration;
 using OpenPerpetuum.Core.Authorisation.Models;
-using OpenPerpetuum.Core.Authorisation.Queries;
-using OpenPerpetuum.Core.Foundation.Processing;
 using System;
+using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace OpenPerpetuum.Api.Authorisation
@@ -14,15 +13,15 @@ namespace OpenPerpetuum.Api.Authorisation
 	// Note: This class is *always* a singleton. Don't inject scoped dependencies
 	public sealed class AuthorisationProvider : OpenIdConnectServerProvider
 	{
-		private readonly ApplicationContext dbContext;
+		private readonly IMemoryCache dbContext;
 
-		public AuthorisationProvider(ApplicationContext dbContext)
+		public AuthorisationProvider(IMemoryCache dbContext)
 		{
 			this.dbContext = dbContext;
 		}
 
 		// Implement OnValidateAuthorizationRequest to support interactive flows (code/implicit/hybrid).
-		public override async Task ValidateAuthorizationRequest(ValidateAuthorizationRequestContext context)
+		public override Task ValidateAuthorizationRequest(ValidateAuthorizationRequestContext context)
 		{
 			/* This method must run in a 'time-constant' fashion.
 			 * Even when authorisation has failed at a certain point
@@ -32,6 +31,7 @@ namespace OpenPerpetuum.Api.Authorisation
 			 * authorisation process, the more of the process you get correct, the longer it will take to return.
 			 * Ideally, the time to return should always stay the same.
 			 */
+			
 			bool isError = false;
 
 			if (!context.Request.IsAuthorizationCodeFlow())
@@ -39,10 +39,10 @@ namespace OpenPerpetuum.Api.Authorisation
 				context.Reject(
 					error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
 					description: "Only authorisation code flow is supported by this server");
-				return; // Given that this is a protocol error I'm not too fussed about the early return
+				return Task.FromResult(0); // Given that this is a protocol error I'm not too fussed about the early return
 			}
 			
-			AccessClientModel accessClient = await GetApplicationAsync(context.ClientId, context.HttpContext.RequestAborted) ?? AccessClientModel.DefaultValue;
+			AccessClientModel accessClient = GetApplication(context.ClientId) ?? AccessClientModel.DefaultValue;
 
 			if (Equals(accessClient.ClientId, Guid.Empty))
 			{
@@ -68,7 +68,7 @@ namespace OpenPerpetuum.Api.Authorisation
 			if (!isError)
 				context.Validate();
 
-			return;
+			return Task.FromResult(0);
 		}
 
 		// Implement OnValidateTokenRequest to support flows using the token endpoint
@@ -85,7 +85,7 @@ namespace OpenPerpetuum.Api.Authorisation
 			return Task.FromResult(0);
 		}
 
-		private async Task<AccessClientModel> GetApplicationAsync(string identifier, CancellationToken cancellationToken)
+		private AccessClientModel GetApplication(string identifier)
 		{
 			if (string.IsNullOrWhiteSpace(identifier))
 				return null;
@@ -93,8 +93,11 @@ namespace OpenPerpetuum.Api.Authorisation
 			if (!Guid.TryParse(identifier, out Guid clientId))
 				clientId = Guid.Empty;
 
+			if (!dbContext.TryGetValue(CacheKeys.AccessClients, out ReadOnlyCollection<AccessClientModel> applications) || applications == null || applications.Count == 0)
+				return AccessClientModel.DefaultValue;
+
 			// Retrieve the application details corresponding to the requested client_id.
-			return await dbContext.Applications.Where(application => application.ClientId == clientId).SingleOrDefaultAsync(cancellationToken);
+			return applications.SingleOrDefault(ap => ap.ClientId == clientId) ?? AccessClientModel.DefaultValue;
 		}
 	}
 }
