@@ -19,6 +19,7 @@ using OpenPerpetuum.Api.Models.Authorisation;
 using OpenPerpetuum.Core.Authorisation.Models;
 using OpenPerpetuum.Core.Authorisation.Queries;
 using OpenPerpetuum.Core.Foundation.Processing;
+using OpenPerpetuum.Core.Foundation.Security;
 
 namespace OpenPerpetuum.Api.Controllers
 {
@@ -204,11 +205,20 @@ namespace OpenPerpetuum.Api.Controllers
 			if (!ModelState.IsValid)
 				return BadRequest();
 			await HttpContext.SignOutAsync("ServerCookie");
-			// Check the username and password just testing for now so allow it
+
+			UserModel user = QueryProcessor.Process(new GAME_AuthenticateAndGetUserDetailsQuery
+			{
+				Email = viewModel.Username,
+				EncryptedPassword = viewModel.Password.ToLegacyShaString()
+			});
 
 			// Create the identity principal
 			var userIdentity = new ClaimsIdentity(new List<Claim> { new Claim(ClaimTypes.Name, viewModel.Username), new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()) }, "ServerCookie");
 			ClaimsPrincipal principal = new ClaimsPrincipal(userIdentity);
+			
+			if (user == UserModel.Default)
+				return Unauthorized();
+
 			await HttpContext.SignInAsync(
 					"ServerCookie",
 					principal);
