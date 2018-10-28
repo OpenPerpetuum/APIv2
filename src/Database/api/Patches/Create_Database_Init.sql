@@ -1,0 +1,50 @@
+create database api; -- Bler; sort this out with something a little more explicit please (I hate leaving things in the hands of SQL Server) =)
+go
+
+begin transaction CREATE_API_DB
+set xact_abort on
+set transaction isolation level read committed
+
+use api
+
+if not exists (select * from sys.schemas where name = 'Authorisation')
+	exec('create schema Authorisation'); -- Allows it to run in its own batch
+
+if not exists (select * from sys.server_principals where type = 'S' and name='api_mgmt_user')
+	create login api_mgmt_user with password='ChangeMe';
+
+if not exists (select * from sys.database_principals where type = 'S' and name='api_mgmt_user')
+	create user api_mgmt_user for login api_mgmt_user with default_schema=dbo;
+
+grant EXECUTE on schema :: dbo to api_mgmt_user;
+grant EXECUTE on schema :: Authorisation to api_mgmt_user;
+
+create table api.dbo.DBPatchVersion
+(
+	PatchId int not null,
+	PatchName nvarchar(500) not null,
+	VersionNumber nvarchar(30) not null,
+	DateApplied datetimeoffset not null,
+	MessageLog nvarchar(max) null,
+	constraint PK_DBPatchVersion_PatchId primary key (PatchId),
+	constraint UQ_DBPatchVersion_VersionNumber unique (VersionNumber)
+);
+
+insert into api.dbo.DBPatchVersion
+(
+	PatchId,
+	PatchName,
+	VersionNumber,
+	DateApplied,
+	MessageLog
+)
+values
+(
+	1000,
+	'Create_Database_Init',
+	'1.000',
+	getdate(),
+	'Initialised database with baseline settings'
+);
+
+commit transaction CREATE_API_DB;

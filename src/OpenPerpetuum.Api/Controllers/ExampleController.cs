@@ -6,9 +6,9 @@ namespace OpenPerpetuum.Api.Controllers
 {
 	[Route("api/[controller]")]
     [ApiController]
-    public class ValuesController : ApiControllerBase
+    public class ExampleController : ApiControllerBase
     {
-		public ValuesController(ICoreContext coreContext) : base(coreContext)
+		public ExampleController(ICoreContext coreContext) : base(coreContext)
 		{ }
 
         // GET api/values

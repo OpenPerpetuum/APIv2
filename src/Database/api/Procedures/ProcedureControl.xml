@@ -1,0 +1,3 @@
+<ProcedureControl>
+	<StoredProcedure name="Authorisation.GetAccessClients" filename="Authorisation.GetAccessClients.sql" />
+</ProcedureControl>
