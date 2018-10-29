@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -91,6 +92,12 @@ namespace OpenPerpetuum.Api
 #endif
 			});
 
+			services.AddAuthorization(options =>
+			{
+				options.AddPolicy("AdminClient", policy => policy.Requirements.Add(new AdminClientRequirement()));
+			});
+
+			services.AddSingleton<IAuthorizationHandler, AdminClientHandler>();
 			services.AddScoped<AuthorisationProvider>();
 
 			services.AddSingleton<IControllerActivator>(new SimpleInjectorControllerActivator(container));

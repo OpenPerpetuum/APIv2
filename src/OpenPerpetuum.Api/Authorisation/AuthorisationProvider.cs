@@ -3,6 +3,7 @@ using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.Extensions.Caching.Memory;
 using OpenPerpetuum.Api.Configuration;
 using OpenPerpetuum.Core.Authorisation.Models;
+using OpenPerpetuum.Core.Foundation.Security;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -68,7 +69,7 @@ namespace OpenPerpetuum.Api.Authorisation
 			if (!isError)
 				context.Validate();
 
-			return Task.FromResult(0);
+			return Task.CompletedTask;
 		}
 
 		// Implement OnValidateTokenRequest to support flows using the token endpoint
@@ -77,12 +78,42 @@ namespace OpenPerpetuum.Api.Authorisation
 		{
 			if (context.Request.IsAuthorizationCodeGrantType())
 				context.Skip();
+			else if (context.Request.IsClientCredentialsGrantType())
+			{
+				AccessClientModel client = GetApplication(context.ClientId);
+				// This next step only really services for slowing down the process and also hiding the real secret key lengths
+				byte[] salt = Cryptography.CreateRandomBytes(32);
+				byte[] appSecret = Cryptography.HashPassword(client.Secret, salt);
+				byte[] incomingSecret = Cryptography.HashPassword(context.ClientSecret, salt);
+
+				bool correctSecret = true;
+
+				// Cos why not on one line? Also this has to be done to hide length differences. No matter how long a string they send in, it always compares it in its entirety
+				// This breaks the time constant rule though "kind of". We only test the length of the incoming string, but we test every character. So if they send in a short string
+				// then it will take less time than a long string, however, they cannot glean the length of the correct string because the time is constant to the length of the incoming string
+				// and not the length of the actual string.
+				// STRICTLY SPEAKING we only request 32 bytes from the hash algorithm, so they'll always be the same length regardless, but just in case...
+				for (int i = 0; i < incomingSecret.Length; i++) correctSecret &= (incomingSecret[i] == ((i >= appSecret.Length) ? appSecret[appSecret.Length - 1] : appSecret[i]));
+
+				bool isError = !correctSecret;
+
+				if (client == AccessClientModel.DefaultValue)
+				{
+					isError = true;
+					context.Reject(
+						error: OpenIdConnectConstants.Errors.InvalidClient,
+						description: "Requests from this client are not authorised");
+				}
+
+				if (!isError)
+					context.Validate();
+			}
 			else
 				context.Reject(
 					error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
 					description: "Only authorisation code grant types are supported");
 
-			return Task.FromResult(0);
+			return Task.CompletedTask;
 		}
 
 		private AccessClientModel GetApplication(string identifier)

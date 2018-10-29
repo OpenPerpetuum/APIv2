@@ -105,6 +105,16 @@ namespace OpenPerpetuum.Api.Controllers
 					OpenIdConnectConstants.Destinations.AccessToken,
 					OpenIdConnectConstants.Destinations.IdentityToken));
 
+			identity.AddClaim(new Claim(OpenIdConnectConstants.Claims.Issuer, "OpenPerpetuumAPIv2")
+				.SetDestinations(
+					OpenIdConnectConstants.Destinations.AccessToken,
+					OpenIdConnectConstants.Destinations.IdentityToken));
+
+			identity.AddClaim(new Claim(OpenIdConnectConstants.Claims.ClientId, request.ClientId)
+				.SetDestinations(
+					OpenIdConnectConstants.Destinations.AccessToken,
+					OpenIdConnectConstants.Destinations.IdentityToken));
+
 			var application = GetApplication(request.ClientId);
 			if (application == null)
 			{
