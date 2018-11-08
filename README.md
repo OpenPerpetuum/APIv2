@@ -15,7 +15,7 @@ The system is built with Docker in mind. However, it is possible to run and debu
 * git clone https://github.com/OPenPerpetuum/APIv2.git && cd APIv2/src
 * dotnet restore *optionally provide the "OpenPerpetuum.Api/OpenPerpetuum.Api.csproj" argument*
 * dotnet build OpenPerpetuum.Api/OpenPerpetuum.Api.csproj -c [Debug|Release] -o ./app
-* dotnet public OpenPerpetuum.Api/OpenPerpetuum.Api.csproj -c [Debug|Release] -o ./app
+* dotnet publish OpenPerpetuum.Api/OpenPerpetuum.Api.csproj -c [Debug|Release] -o ./app
 * <To start the app> cd app && dotnet OpenPerpetuum.Api.dll
 
 # Installation (Windows)
