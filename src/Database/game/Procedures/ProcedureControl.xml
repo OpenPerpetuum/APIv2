@@ -1,0 +1,3 @@
+<ProcedureControl>
+	<Object schema="API" object="AuthenticateAndGetUserInfo" filename="API.AuthenticateAndGetUserInfo.sql" type="Procedure" />
+</ProcedureControl>

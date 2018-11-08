@@ -1,0 +1,4 @@
+<PatchControl>
+	<catalogue name="API" database="api" root="./api/Catalogue.xml" />
+	<catalogue name="Game" database="perpetuumsa" root="./game/Catalogue.xml" />
+</PatchControl>
