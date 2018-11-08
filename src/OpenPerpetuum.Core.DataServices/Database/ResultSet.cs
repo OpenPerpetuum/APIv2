@@ -71,9 +71,12 @@ namespace OpenPerpetuum.Core.DataServices.Database
 
 		private TResultObject ParseScalarResult(object value)
 		{
-			TResultObject resultObject = (TResultObject)Convert.ChangeType(value, typeof(TResultObject));
+			object tempVal = value == DBNull.Value ? null : value;
+			Type resultType = Nullable.GetUnderlyingType(typeof(TResultObject)) ?? typeof(TResultObject);
 
-			return resultObject;
+			object safeObject = (tempVal == null) ? null : Convert.ChangeType(tempVal, resultType);
+
+			return (TResultObject)safeObject;
 		}
 
 		private TResultObject ParseObjectResult<TDataObject>(DataRowObject dataRow)
