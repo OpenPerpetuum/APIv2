@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OpenPerpetuum.Api.Configuration
+namespace OpenPerpetuum.Core.Foundation.SharedConfiguration
 {
 	public class OpenIdConnectConfiguration
 	{
@@ -37,6 +37,18 @@ namespace OpenPerpetuum.Api.Configuration
 		}
 
 		public bool EnableJWT
+		{
+			get;
+			set;
+		}
+
+		public bool UseDeveloperKeys
+		{
+			get;
+			set;
+		}
+
+		public string IdentityServer
 		{
 			get;
 			set;

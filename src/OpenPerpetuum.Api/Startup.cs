@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+﻿using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -10,32 +7,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
-using Microsoft.Extensions.Options;
-using OpenPerpetuum.Api.Authorisation;
+using Newtonsoft.Json;
 using OpenPerpetuum.Api.Configuration;
 using OpenPerpetuum.Api.DependencyInstallers;
-using OpenPerpetuum.Core.Authorisation.Models;
-using OpenPerpetuum.Core.Authorisation.Queries;
-using OpenPerpetuum.Core.DataServices;
 using OpenPerpetuum.Core.Extensions;
-using OpenPerpetuum.Core.Foundation.Processing;
+using OpenPerpetuum.Core.Foundation.SharedConfiguration;
 using SimpleInjector;
 using SimpleInjector.Integration.AspNetCore.Mvc;
 using SimpleInjector.Lifestyles;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace OpenPerpetuum.Api
 {
@@ -56,7 +41,7 @@ namespace OpenPerpetuum.Api
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services, IHostingEnvironment env)
         {
             services.AddOptions();
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -65,41 +50,22 @@ namespace OpenPerpetuum.Api
 
 			services.Configure<OpenIdConnectConfiguration>(options => Configuration.GetSection("OpenIdConnect").Bind(options));
 			services.Configure<DataProviderConfiguration>(options => Configuration.GetSection("DataProviders").Bind(options));
-			
-			services.AddAuthentication(sharedOptions =>
-			{
-				sharedOptions.DefaultScheme = "ServerCookie";
-			})
-			.AddCookie("ServerCookie", options =>
-			{
-				options.Cookie.Name = CookieAuthenticationDefaults.CookiePrefix + "ServerCookie";
-				options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
-				options.LoginPath = new PathString("/authorisation/login");
-				options.LogoutPath = new PathString("/authorisation/logout");
-			})
-			.AddOAuthValidation()
-			.AddOpenIdConnectServer(config =>
-			{
-				config.ProviderType = typeof(AuthorisationProvider);
-				config.AuthorizationEndpointPath = openIdConnectConfig.AuthorisationPath;
-				config.LogoutEndpointPath = openIdConnectConfig.LogoutPath;
-				config.TokenEndpointPath = openIdConnectConfig.TokenPath;
-				config.UserinfoEndpointPath = openIdConnectConfig.UserInfoPath;
 
-#if DEBUG // Development stuff
-				config.ApplicationCanDisplayErrors = true;
-				config.AllowInsecureHttp = openIdConnectConfig.AllowInsecureHttp;
-#endif
-			});
+			services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+				.AddIdentityServerAuthentication(options =>
+				{
+					options.Authority = openIdConnectConfig.IdentityServer;
+					options.ApiName = "OPAPI"
+				})
 
 			services.AddAuthorization(options =>
 			{
-				options.AddPolicy("AdminClient", policy => policy.Requirements.Add(new AdminClientRequirement()));
+				options.AddPolicy(OpenPerpetuumScopes.Registration, builder =>
+				{
+					builder.RequireScope(OpenPerpetuumScopes.Registration);
+				});
 			});
-
-			services.AddSingleton<IAuthorizationHandler, AdminClientHandler>();
-			services.AddScoped<AuthorisationProvider>();
-
+			
 			services.AddSingleton<IControllerActivator>(new SimpleInjectorControllerActivator(container));
 			services.AddSingleton<IViewComponentActivator>(new SimpleInjectorViewComponentActivator(container));
 
@@ -130,19 +96,26 @@ namespace OpenPerpetuum.Api
 #endif
 			});
 
-			services.AddMvc(setupAction =>
-            {
+			services.AddMvcCore(setupAction =>
+			{
 #if DEBUG // Don't cache in debug mode
-                setupAction.CacheProfiles.Add(
-                    key: "Never",
-                    value: new CacheProfile
-                    {
-                        Duration = -1,
-                        Location = ResponseCacheLocation.None,
-                        NoStore = true
-                    });
+				setupAction.CacheProfiles.Add(
+					key: "Never",
+					value: new CacheProfile
+					{
+						Duration = -1,
+						Location = ResponseCacheLocation.None,
+						NoStore = true
+					});
 #endif
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+			})
+			.SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+			.AddAuthorization()
+			.AddJsonFormatters()
+			.AddJsonOptions(options =>
+			{
+				options.SerializerSettings.Formatting = env.IsDevelopment() ? Formatting.Indented : Formatting.None;
+			});
 
 			services.AddMemoryCache();
 			services.AddDistributedMemoryCache();
@@ -201,10 +174,10 @@ namespace OpenPerpetuum.Api
 			app.UseAuthentication();
 			app.UseStaticFiles();
 			app.UseMvc();
-			CancellationTokenSource tokenSource = new CancellationTokenSource();
-			Task.Run(() => RunPeriodically(() => PopulateApplications(container.GetRequiredService<IMemoryCache>(), container.GetRequiredService<IQueryProcessor>()), TimeSpan.FromMinutes(3), tokenSource.Token));
+			//CancellationTokenSource tokenSource = new CancellationTokenSource();
+			//Task.Run(() => RunPeriodically(() => PopulateApplications(container.GetRequiredService<IMemoryCache>(), container.GetRequiredService<IQueryProcessor>()), TimeSpan.FromMinutes(3), tokenSource.Token));
 
-			applicationLifetime.ApplicationStopping.Register(() => tokenSource.Cancel());
+			//applicationLifetime.ApplicationStopping.Register(() => tokenSource.Cancel());
 
 			UriParser.Register(new GenericUriParser(GenericUriParserOptions.GenericAuthority), "pack", -1); // Don't fail with Azure packed claims
 
@@ -233,23 +206,6 @@ namespace OpenPerpetuum.Api
 
 			// Add "Other Stuff" here! (I typically use Dependency Installers rather than list all my deps here)
 			container.RegisterPerpetuumApiTypes();
-		}
-
-		private async Task RunPeriodically(Action action, TimeSpan interval, CancellationToken token)
-		{
-			while(true)
-			{
-				action();
-				await Task.Delay(interval, token);
-			}
-		}
-
-		private void PopulateApplications(IMemoryCache dbContext, IQueryProcessor queryProcessor)
-		{
-			dbContext.Remove(CacheKeys.AccessClients);
-
-			ReadOnlyCollection<AccessClientModel> applications = queryProcessor.Process(new API_GetPermittedClientQuery { ClientId = null }) ?? new List<AccessClientModel>().AsReadOnly();
-			dbContext.Set(CacheKeys.AccessClients, applications);
 		}
 	}
 }
