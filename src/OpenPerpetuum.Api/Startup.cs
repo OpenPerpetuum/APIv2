@@ -16,17 +16,14 @@ using Newtonsoft.Json;
 using OpenPerpetuum.Api.Configuration;
 using OpenPerpetuum.Api.DependencyInstallers;
 using OpenPerpetuum.Core.Extensions;
-using OpenPerpetuum.Core.Foundation.SharedConfiguration;
-using SimpleInjector;
-using SimpleInjector.Integration.AspNetCore.Mvc;
-using SimpleInjector.Lifestyles;
+using OpenPerpetuum.Core.SharedIdentity.Configuration;
 using System;
+using static OpenPerpetuum.Core.SharedIdentity.Configuration.IdentityConfig;
 
 namespace OpenPerpetuum.Api
 {
 	public class Startup
     {
-        private readonly Container container = new Container();
         private IConfigurationRoot Configuration { get; }
 
         public Startup(IHostingEnvironment env)
@@ -41,7 +38,7 @@ namespace OpenPerpetuum.Api
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services, IHostingEnvironment env)
+        public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -55,20 +52,19 @@ namespace OpenPerpetuum.Api
 				.AddIdentityServerAuthentication(options =>
 				{
 					options.Authority = openIdConnectConfig.IdentityServer;
-					options.ApiName = "OPAPI"
-				})
+					options.ApiName = "OPAPI";
+					options.RequireHttpsMetadata = !openIdConnectConfig.AllowInsecureHttp;
+					options.Validate();
+				});
 
 			services.AddAuthorization(options =>
 			{
-				options.AddPolicy(OpenPerpetuumScopes.Registration, builder =>
+				options.AddPolicy(Scopes.Registration, builder =>
 				{
-					builder.RequireScope(OpenPerpetuumScopes.Registration);
+					builder.RequireScope(Scopes.Registration);
 				});
 			});
 			
-			services.AddSingleton<IControllerActivator>(new SimpleInjectorControllerActivator(container));
-			services.AddSingleton<IViewComponentActivator>(new SimpleInjectorViewComponentActivator(container));
-
 			services.AddCors(options =>
 			{
 				options.AddPolicy("development", policy =>
@@ -114,14 +110,17 @@ namespace OpenPerpetuum.Api
 			.AddJsonFormatters()
 			.AddJsonOptions(options =>
 			{
-				options.SerializerSettings.Formatting = env.IsDevelopment() ? Formatting.Indented : Formatting.None;
+#if DEBUG
+				options.SerializerSettings.Formatting = Formatting.Indented;
+#else
+				options.SerializerSettings.Formatting = Formatting.None;
+#endif
 			});
 
 			services.AddMemoryCache();
 			services.AddDistributedMemoryCache();
 
-            services.EnableSimpleInjectorCrossWiring(container);
-            services.UseSimpleInjectorAspNetRequestScoping(container);
+			services.RegisterPerpetuumApiTypes();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -140,18 +139,6 @@ namespace OpenPerpetuum.Api
             }
 
             ILogger startupLog = loggerFactory.CreateLogger("Startup");
-
-            InitialiseContainer(app, loggerFactory);
-            container.Verify();
-
-			// Ensure all requests are scoped for the container
-			app.Use(async (context, next) =>
-            {
-                using (AsyncScopedLifestyle.BeginScope(container))
-                {
-                    await next();
-                }
-            });
 
 			bool isDevMode = false, isHsts = false, isHttps = false;
 
@@ -183,29 +170,5 @@ namespace OpenPerpetuum.Api
 
             startupLog.LogInformation("Initialisation complete");
         }
-
-        private void InitialiseContainer(IApplicationBuilder app, ILoggerFactory loggerFactory)
-        {
-            var logger = loggerFactory.CreateLogger("ContainerStartup");
-            logger.LogInformation("Starting container initialisation");
-
-            container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
-			// MVC Autowire
-			container.RegisterMvcControllers(app);
-            container.RegisterMvcViewComponents(app);
-
-			// CrossWire Magic
-			container.AutoCrossWireAspNetComponents(app);
-
-			// Singleton Registrations
-			container.RegisterInstance<Func<IViewBufferScope>>(() => app.GetRequestService<IViewBufferScope>());
-            container.RegisterInstance(typeof(IServiceProvider), container); // Self registration; basically enables witchcraft...
-
-			// Add Middleware here!
-			// Note that the order in which you enable them in Configure/ConfigureServices is important!
-
-			// Add "Other Stuff" here! (I typically use Dependency Installers rather than list all my deps here)
-			container.RegisterPerpetuumApiTypes();
-		}
 	}
 }

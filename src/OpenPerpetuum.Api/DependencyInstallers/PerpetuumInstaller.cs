@@ -1,10 +1,10 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using OpenPerpetuum.Api.Configuration;
 using OpenPerpetuum.Core.DataServices.Context;
 using OpenPerpetuum.Core.DataServices.CQRS;
 using OpenPerpetuum.Core.DataServices.Database.Interfaces;
 using OpenPerpetuum.Core.Foundation.Processing;
-using SimpleInjector;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,20 +14,29 @@ namespace OpenPerpetuum.Api.DependencyInstallers
 {
 	public static class PerpetuumInstaller
 	{
-		public static void RegisterPerpetuumApiTypes(this Container container)
+
+		public static void RegisterPerpetuumApiTypes(this IServiceCollection container)
 		{
 			IEnumerable<Assembly> asm = AssemblyLoader.Instance.RuntimeAssemblies;
-			container.Register(typeof(ICommandHandler<>), asm);
-			// Example of how to add decorators to the handlers via IoC -> container.RegisterDecorator(typeof(ICommandHandler<>), typeof(Extension.DecoratedHandler<>));
-			container.Register(typeof(IQueryHandler<,>), asm);
+			Type commandHandlerType = typeof(ICommandHandler<>);
+			Type queryHandlerType = typeof(IQueryHandler<,>);
+
+			container.Scan(scan => scan
+				.FromAssemblies(asm)
+				.AddClasses(classes => classes.AssignableTo(commandHandlerType))
+					.AsImplementedInterfaces()
+					.WithTransientLifetime()
+				.AddClasses(classes => classes.AssignableTo(queryHandlerType))
+					.AsImplementedInterfaces()
+					.WithTransientLifetime());
 
 			// Manually wire the processors. These are being auto-wired to allow for inaccessible class registration
-			container.Register<ICommandProcessor, BasicCommandProcessor>();
-			container.Register<IQueryProcessor, BasicQueryProcessor>();
-			container.Register<IIdGeneratorService, IdGeneratorService>();
-			container.Register<IGenericContext, GenericContext>();
-			container.RegisterSingleton(() => GetPerpetuumDatabases(container));
-			container.Register<ICoreContext, CoreContext>();
+			container.AddScoped<ICommandProcessor, BasicCommandProcessor>();
+			container.AddScoped<IQueryProcessor, BasicQueryProcessor>();
+			container.AddScoped<IIdGeneratorService, IdGeneratorService>();
+			container.AddSingleton<IGenericContext, GenericContext>();
+			container.AddSingleton((sp) => GetPerpetuumDatabases(sp));
+			container.AddScoped<ICoreContext, CoreContext>();
 		}
 
 		private static IDataContext GetPerpetuumDatabases(IServiceProvider container)
@@ -43,7 +52,7 @@ namespace OpenPerpetuum.Api.DependencyInstallers
 				IDatabaseProvider provider;
 				try
 				{
-					var providerType = providers.Single(ti => ti.ToFriendlyName().StartsWith(dbConfig.Type));
+					var providerType = providers.Single(ti => ti.Name.StartsWith(dbConfig.Type));
 					provider = Activator.CreateInstance(providerType.AsType(), new object[] { dbConfig.ProviderName, dbConfig.Username, dbConfig.Password, dbConfig.Server, dbConfig.DefaultDatabase }) as IDatabaseProvider;
 				}
 				catch (InvalidOperationException ioe)

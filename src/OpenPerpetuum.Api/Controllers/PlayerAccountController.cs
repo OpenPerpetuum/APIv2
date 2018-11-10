@@ -2,8 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using OpenPerpetuum.Api.Models.PlayerAccount;
 using OpenPerpetuum.Core.Foundation.Processing;
-using OpenPerpetuum.Core.Foundation.SharedConfiguration;
 using System.Net;
+using System.Threading.Tasks;
+using static OpenPerpetuum.Core.SharedIdentity.Configuration.IdentityConfig;
 
 namespace OpenPerpetuum.Api.Controllers
 {
@@ -14,7 +15,19 @@ namespace OpenPerpetuum.Api.Controllers
 		{
 		}
 
-		[HttpPost("register"), Authorize(Policy = OpenPerpetuumScopes.Registration)]
+		[HttpGet("[action]")]
+		public IActionResult NoAuthTest()
+		{
+			return Ok();
+		}
+
+		[HttpGet("[action]"), Authorize(Policy = Scopes.Registration)]
+		public IActionResult Test()
+		{
+			return Ok();
+		}
+
+		[HttpPost("register"), Authorize(Policy = Scopes.Registration)]
 		public IActionResult CreateNewPlayer([FromBody] CreateNewPlayerModel request)
 		{
 			return StatusCode((int)HttpStatusCode.NotImplemented);

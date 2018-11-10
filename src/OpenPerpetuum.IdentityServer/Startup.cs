@@ -14,15 +14,12 @@ using OpenPerpetuum.Core.SharedIdentity.Configuration;
 using OpenPerpetuum.IdentityServer.Configuration;
 using OpenPerpetuum.IdentityServer.DependencyInstallers;
 using OpenPerpetuum.IdentityServer.Stores;
-using SimpleInjector;
-using SimpleInjector.Lifestyles;
 using System;
 
 namespace OpenPerpetuum.IdentityServer
 {
 	public class Startup
 	{
-		private readonly Container container = new Container();
 		private IConfigurationRoot Configuration { get; }
 
 		public Startup(IHostingEnvironment env)
@@ -40,8 +37,6 @@ namespace OpenPerpetuum.IdentityServer
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddMvc();
-			services.EnableSimpleInjectorCrossWiring(container);
-			services.UseSimpleInjectorAspNetRequestScoping(container);
 			
 			services.AddOptions();
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -82,20 +77,6 @@ namespace OpenPerpetuum.IdentityServer
 
 			ILogger startupLog = loggerFactory.CreateLogger("Startup");
 
-			container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
-			container.AutoCrossWireAspNetComponents(app);
-			//InitialiseContainer(app, loggerFactory);
-			container.Verify();
-
-			// Ensure all requests are scoped for the container
-			app.Use(async (context, next) =>
-			{
-				using (AsyncScopedLifestyle.BeginScope(container))
-				{
-					await next();
-				}
-			});
-
 			bool isDevMode = false, isHsts = false, isHttps = false;
 
 			if (env.IsDevelopment())
@@ -119,27 +100,6 @@ namespace OpenPerpetuum.IdentityServer
 			app.UseIdentityServer();
 
 			app.UseMvcWithDefaultRoute();
-		}
-
-		private void InitialiseContainer(IApplicationBuilder app, ILoggerFactory loggerFactory)
-		{
-			var logger = loggerFactory.CreateLogger("ContainerStartup");
-			logger.LogInformation("Starting container initialisation");
-
-			container.Options.DefaultScopedLifestyle = new AsyncScopedLifestyle();
-			
-			// CrossWire Magic
-			container.AutoCrossWireAspNetComponents(app);
-
-			// Singleton Registrations
-			container.RegisterInstance<Func<IViewBufferScope>>(() => app.GetRequestService<IViewBufferScope>());
-			container.RegisterInstance(typeof(IServiceProvider), container); // Self registration; basically enables witchcraft...
-
-			// Add Middleware here!
-			// Note that the order in which you enable them in Configure/ConfigureServices is important!
-
-			// Add "Other Stuff" here! (I typically use Dependency Installers rather than list all my deps here)
-			//container.RegisterPerpetuumApiTypes();
 		}
 	}
 }

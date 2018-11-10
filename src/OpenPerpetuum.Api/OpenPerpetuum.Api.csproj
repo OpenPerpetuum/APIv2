@@ -22,8 +22,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.1.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.5" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="SimpleInjector" Version="4.4.0" />
-    <PackageReference Include="SimpleInjector.Integration.AspNetCore.Mvc" Version="4.4.1" />
+    <PackageReference Include="Scrutor" Version="3.0.1" />
     <PackageReference Include="StackExchange.Redis.Extensions.AspNetCore" Version="4.0.3" />
     <PackageReference Include="StackExchange.Redis.Extensions.Core" Version="4.0.3" />
   </ItemGroup>
@@ -32,6 +31,7 @@
     <ProjectReference Include="..\OpenPerpetuum.Core.Authorisation\OpenPerpetuum.Core.Authorisation.csproj" />
     <ProjectReference Include="..\OpenPerpetuum.Core.DataServices\OpenPerpetuum.Core.DataServices.csproj" />
     <ProjectReference Include="..\OpenPerpetuum.Core.Foundation\OpenPerpetuum.Core.Foundation.csproj" />
+    <ProjectReference Include="..\OpenPerpetuum.Core.SharedIdentity\OpenPerpetuum.Core.SharedIdentity.csproj" />
     <ProjectReference Include="..\OpenPerpetuum.Core\OpenPerpetuum.Core.Extensions\OpenPerpetuum.Core.Extensions.csproj" />
   </ItemGroup>
 
