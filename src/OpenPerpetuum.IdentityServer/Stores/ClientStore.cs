@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using OpenPerpetuum.Core.Authorisation.Models;
 using OpenPerpetuum.Core.Authorisation.Queries;
 using OpenPerpetuum.Core.Foundation.Processing;
-using OpenPerpetuum.Core.Foundation.SharedConfiguration;
+using OpenPerpetuum.Core.SharedIdentity.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,6 +49,18 @@ namespace OpenPerpetuum.IdentityServer.Stores
 				})?.SingleOrDefault();
 			});
 
+			var permittedScopes = new List<string>
+			{
+				StandardScopes.OpenId,
+				StandardScopes.OfflineAccess,
+				StandardScopes.Profile,
+				StandardScopes.Email,
+				IdentityConfig.Scopes.Killboard // Killboard is public
+			};
+
+			if (client.IsAdministratorApp)
+				permittedScopes.Add(IdentityConfig.Scopes.Registration); // Registration is not...
+
 			return new Client
 			{
 				ClientId = clientId,
@@ -56,18 +68,8 @@ namespace OpenPerpetuum.IdentityServer.Stores
 				ClientSecrets = new List<Secret> { new Secret(client.Secret) },
 				Enabled = true,
 				RedirectUris = new List<string> { client.RedirectUri },
-				AllowedGrantTypes = GrantTypes.CodeAndClientCredentials,
-				AllowedScopes = new List<string>
-				{
-					StandardScopes.OpenId,
-					StandardScopes.OfflineAccess,
-					StandardScopes.Profile,
-					StandardScopes.Email, /* We should add in the custom API scopes here. This needs to be stored in the DB. For now, allow OP_REG and OP_KILLBOARD */
-					OpenPerpetuumScopes.Registration,
-					OpenPerpetuumScopes.Killboard,
-					OpenPerpetuumScopes.API_Name
-
-				}
+				AllowedGrantTypes = client.IsAdministratorApp ? GrantTypes.CodeAndClientCredentials : GrantTypes.Code,
+				AllowedScopes = permittedScopes
 			};
 		}
 	}

@@ -10,8 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
 using OpenPerpetuum.Core.Extensions;
-using OpenPerpetuum.Core.Foundation.Processing;
-using OpenPerpetuum.Core.Foundation.SharedConfiguration;
+using OpenPerpetuum.Core.SharedIdentity.Configuration;
 using OpenPerpetuum.IdentityServer.Configuration;
 using OpenPerpetuum.IdentityServer.DependencyInstallers;
 using OpenPerpetuum.IdentityServer.Stores;
@@ -40,6 +39,7 @@ namespace OpenPerpetuum.IdentityServer
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
+			services.AddMvc();
 			services.EnableSimpleInjectorCrossWiring(container);
 			services.UseSimpleInjectorAspNetRequestScoping(container);
 			
@@ -58,7 +58,8 @@ namespace OpenPerpetuum.IdentityServer
 
 			services.AddIdentityServer()
 				.AddDeveloperSigningCredential()
-				.AddInMemoryApiResources(IdentityServerConfiguration.GetApiResources())
+				.AddInMemoryApiResources(IdentityConfig.GetApiResources())
+				.AddInMemoryIdentityResources(IdentityConfig.GetIdentityResources())
 				.AddClientStoreCache<CachingClientStore<ClientStore>>();
 
 			
@@ -113,7 +114,11 @@ namespace OpenPerpetuum.IdentityServer
 
 			startupLog.LogInformation($"********************\n      Development mode: {isDevMode.ToEnabledString()}\n      HSTS mode:\t{isHsts.ToEnabledString()}\n      HTTPS mode:\t{isHttps.ToEnabledString()}\n      ********************");
 
+			app.UseStaticFiles();
+
 			app.UseIdentityServer();
+
+			app.UseMvcWithDefaultRoute();
 		}
 
 		private void InitialiseContainer(IApplicationBuilder app, ILoggerFactory loggerFactory)

@@ -5,11 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Views\Shared\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="IdentityServer4" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.5" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
@@ -26,6 +28,7 @@
     <ProjectReference Include="..\OpenPerpetuum.Core.Authorisation\OpenPerpetuum.Core.Authorisation.csproj" />
     <ProjectReference Include="..\OpenPerpetuum.Core.DataServices\OpenPerpetuum.Core.DataServices.csproj" />
     <ProjectReference Include="..\OpenPerpetuum.Core.Foundation\OpenPerpetuum.Core.Foundation.csproj" />
+    <ProjectReference Include="..\OpenPerpetuum.Core.SharedIdentity\OpenPerpetuum.Core.SharedIdentity.csproj" />
     <ProjectReference Include="..\OpenPerpetuum.Core\OpenPerpetuum.Core.Extensions\OpenPerpetuum.Core.Extensions.csproj" />
   </ItemGroup>
 

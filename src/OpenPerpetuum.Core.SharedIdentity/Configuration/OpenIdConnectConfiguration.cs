@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace OpenPerpetuum.Core.Foundation.SharedConfiguration
+﻿namespace OpenPerpetuum.Core.SharedIdentity.Configuration
 {
 	public class OpenIdConnectConfiguration
 	{
