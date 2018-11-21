@@ -157,7 +157,7 @@ namespace OpenPerpetuum.Api
             }            
 
             startupLog.LogInformation($"********************\n      Development mode: {isDevMode.ToEnabledString()}\n      HSTS mode:\t{isHsts.ToEnabledString()}\n      HTTPS mode:\t{isHttps.ToEnabledString()}\n      ********************");
-
+			
 			app.UseAuthentication();
 			app.UseStaticFiles();
 			app.UseMvc();
