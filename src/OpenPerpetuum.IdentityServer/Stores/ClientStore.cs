@@ -65,10 +65,11 @@ namespace OpenPerpetuum.IdentityServer.Stores
 			{
 				ClientId = clientId,
 				ClientName = client.FriendlyName,
-				ClientSecrets = new List<Secret> { new Secret(client.Secret) },
+				ClientSecrets = new List<Secret> { new Secret(client.Secret.Sha256(), "Client Application Shared Secret") },
 				Enabled = true,
 				RedirectUris = new List<string> { client.RedirectUri },
-				AllowedGrantTypes = client.IsAdministratorApp ? GrantTypes.CodeAndClientCredentials : GrantTypes.Code,
+				AllowedGrantTypes = client.IsAdministratorApp ? GrantTypes.CodeAndClientCredentials : GrantTypes.ClientCredentials,
+				RequirePkce = !client.IsAdministratorApp,
 				AllowedScopes = permittedScopes
 			};
 		}
