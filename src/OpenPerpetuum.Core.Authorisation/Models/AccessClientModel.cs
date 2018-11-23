@@ -16,7 +16,7 @@ namespace OpenPerpetuum.Core.Authorisation.Models
 					ClientId = Guid.Empty,
 					FriendlyName = "Default Value",
 					RedirectUri = "http://www.open-perpetuum.com",
-					Secret = string.Empty,
+					Secret = "Default Value",
 					IsAdministratorApp = false
 				};
 			}

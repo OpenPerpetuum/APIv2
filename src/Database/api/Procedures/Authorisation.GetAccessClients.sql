@@ -12,7 +12,7 @@ select
 	AdministratorContactAddress,
 	AdministratorName,
 	RedirectUri,
-	SecretKey,
+	SecretKey as [Secret],
 	IsAdministratorApp
 from AccessClient
 where (@ClientId is null or ClientId = @ClientId);

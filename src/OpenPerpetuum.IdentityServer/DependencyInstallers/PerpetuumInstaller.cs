@@ -1,20 +1,21 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using OpenPerpetuum.Api.Configuration;
 using OpenPerpetuum.Core.DataServices.Context;
 using OpenPerpetuum.Core.DataServices.CQRS;
 using OpenPerpetuum.Core.DataServices.Database.Interfaces;
 using OpenPerpetuum.Core.Foundation.Processing;
+using OpenPerpetuum.Core.Foundation.Utilities;
+using OpenPerpetuum.IdentityServer.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace OpenPerpetuum.Api.DependencyInstallers
+namespace OpenPerpetuum.IdentityServer.DependencyInstallers
 {
 	public static class PerpetuumInstaller
 	{
-
+		
 		public static void RegisterPerpetuumApiTypes(this IServiceCollection container)
 		{
 			IEnumerable<Assembly> asm = AssemblyLoader.Instance.RuntimeAssemblies;
@@ -68,5 +69,7 @@ namespace OpenPerpetuum.Api.DependencyInstallers
 
 			return dataContext;
 		}
+
+		
 	}
 }
