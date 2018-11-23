@@ -5,6 +5,7 @@ using OpenPerpetuum.Core.DataServices.Context;
 using OpenPerpetuum.Core.DataServices.CQRS;
 using OpenPerpetuum.Core.DataServices.Database.Interfaces;
 using OpenPerpetuum.Core.Foundation.Processing;
+using OpenPerpetuum.Core.Genxy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +29,10 @@ namespace OpenPerpetuum.Api.DependencyInstallers
 					.WithTransientLifetime()
 				.AddClasses(classes => classes.AssignableTo(queryHandlerType))
 					.AsImplementedInterfaces()
-					.WithTransientLifetime());
+					.WithTransientLifetime()
+				.AddClasses(classes => classes.AssignableTo(typeof(IGenxyReader)))
+					.AsImplementedInterfaces()
+					.WithScopedLifetime());
 
 			// Manually wire the processors. These are being auto-wired to allow for inaccessible class registration
 			container.AddScoped<ICommandProcessor, BasicCommandProcessor>();
@@ -37,6 +41,7 @@ namespace OpenPerpetuum.Api.DependencyInstallers
 			container.AddSingleton<IGenericContext, GenericContext>();
 			container.AddSingleton((sp) => GetPerpetuumDatabases(sp));
 			container.AddScoped<ICoreContext, CoreContext>();
+			
 		}
 
 		private static IDataContext GetPerpetuumDatabases(IServiceProvider container)

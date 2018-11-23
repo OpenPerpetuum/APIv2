@@ -47,6 +47,7 @@ namespace OpenPerpetuum.Api
 
 			services.Configure<OpenIdConnectConfiguration>(options => Configuration.GetSection("OpenIdConnect").Bind(options));
 			services.Configure<DataProviderConfiguration>(options => Configuration.GetSection("DataProviders").Bind(options));
+			services.Configure<TestData>(options => Configuration.GetSection("TestData").Bind(options));
 
 			services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
 				.AddIdentityServerAuthentication(options =>

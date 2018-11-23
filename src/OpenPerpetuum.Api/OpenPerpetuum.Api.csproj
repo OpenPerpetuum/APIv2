@@ -31,6 +31,8 @@
     <ProjectReference Include="..\OpenPerpetuum.Core.Authorisation\OpenPerpetuum.Core.Authorisation.csproj" />
     <ProjectReference Include="..\OpenPerpetuum.Core.DataServices\OpenPerpetuum.Core.DataServices.csproj" />
     <ProjectReference Include="..\OpenPerpetuum.Core.Foundation\OpenPerpetuum.Core.Foundation.csproj" />
+    <ProjectReference Include="..\OpenPerpetuum.Core.Genxy\OpenPerpetuum.Core.Genxy.csproj" />
+    <ProjectReference Include="..\OpenPerpetuum.Core.Killboard\OpenPerpetuum.Core.Killboard.csproj" />
     <ProjectReference Include="..\OpenPerpetuum.Core.SharedIdentity\OpenPerpetuum.Core.SharedIdentity.csproj" />
     <ProjectReference Include="..\OpenPerpetuum.Core\OpenPerpetuum.Core.Extensions\OpenPerpetuum.Core.Extensions.csproj" />
   </ItemGroup>

@@ -13,9 +13,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPerpetuum.Core.Foundati
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPerpetuum.Core.Authorisation", "OpenPerpetuum.Core.Authorisation\OpenPerpetuum.Core.Authorisation.csproj", "{72288B00-F3D3-4C19-A277-9EF2EFAE9ADE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPerpetuum.IdentityServer", "OpenPerpetuum.IdentityServer\OpenPerpetuum.IdentityServer.csproj", "{C6F97053-41ED-4BCB-AF42-99C3C8FCBE0B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPerpetuum.IdentityServer", "OpenPerpetuum.IdentityServer\OpenPerpetuum.IdentityServer.csproj", "{C6F97053-41ED-4BCB-AF42-99C3C8FCBE0B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPerpetuum.Core.SharedIdentity", "OpenPerpetuum.Core.SharedIdentity\OpenPerpetuum.Core.SharedIdentity.csproj", "{02B6AFF6-6177-45ED-B25A-6B8754699812}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPerpetuum.Core.SharedIdentity", "OpenPerpetuum.Core.SharedIdentity\OpenPerpetuum.Core.SharedIdentity.csproj", "{02B6AFF6-6177-45ED-B25A-6B8754699812}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPerpetuum.Core.Genxy", "OpenPerpetuum.Core.Genxy\OpenPerpetuum.Core.Genxy.csproj", "{6ECBD241-0934-454A-9374-830B25087059}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPerpetuum.Core.Killboard", "OpenPerpetuum.Core.Killboard\OpenPerpetuum.Core.Killboard.csproj", "{5EB04F20-828D-4013-A77E-18D652F45247}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +55,14 @@ Global
 		{02B6AFF6-6177-45ED-B25A-6B8754699812}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02B6AFF6-6177-45ED-B25A-6B8754699812}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02B6AFF6-6177-45ED-B25A-6B8754699812}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6ECBD241-0934-454A-9374-830B25087059}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6ECBD241-0934-454A-9374-830B25087059}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6ECBD241-0934-454A-9374-830B25087059}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6ECBD241-0934-454A-9374-830B25087059}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EB04F20-828D-4013-A77E-18D652F45247}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EB04F20-828D-4013-A77E-18D652F45247}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EB04F20-828D-4013-A77E-18D652F45247}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EB04F20-828D-4013-A77E-18D652F45247}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
