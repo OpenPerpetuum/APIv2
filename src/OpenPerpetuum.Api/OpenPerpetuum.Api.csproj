@@ -37,10 +37,4 @@
     <ProjectReference Include="..\OpenPerpetuum.Core\OpenPerpetuum.Core.Extensions\OpenPerpetuum.Core.Extensions.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Update="appsettings.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
 </Project>

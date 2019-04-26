@@ -46,7 +46,8 @@ namespace OpenPerpetuum.Core.Killboard.Queries.Handlers
             {
                 KillData = killList.AsReadOnly(),
                 Page = query.Page,
-                ResultsPerPage = query.ResultsPerPage
+                ResultsPerPage = query.ResultsPerPage,
+                ResultsReturned = killList.Count
             };
         }
     }
