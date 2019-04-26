@@ -6,13 +6,13 @@ The system is built with Docker in mind. However, it is possible to run and debu
 # Installation (\*nix)
 
 ## Pre-requisites
-* dotnet core SDK 2.1.401 (Required)
-* dotnet code Runtime 2.1 (Required)
+* dotnet core SDK 2.2.101 (Required)
+* dotnet code Runtime 2.2 (Required)
 * docker (Recommended)
 * VS Code (Recommended)
 
 ## Installation steps (command line only)
-* git clone https://github.com/OPenPerpetuum/APIv2.git && cd APIv2/src
+* git clone https://github.com/OpenPerpetuum/APIv2.git && cd APIv2/src
 * dotnet restore *optionally provide the "OpenPerpetuum.Api/OpenPerpetuum.Api.csproj" argument*
 * dotnet build OpenPerpetuum.Api/OpenPerpetuum.Api.csproj -c [Debug|Release] -o ./app
 * dotnet publish OpenPerpetuum.Api/OpenPerpetuum.Api.csproj -c [Debug|Release] -o ./app
@@ -21,8 +21,8 @@ The system is built with Docker in mind. However, it is possible to run and debu
 # Installation (Windows)
 
 ## Pre-requisites 
-* dotnet core SDK 2.1.401 (Required)
-* dotnet code Runtime 2.1 (Required)
+* dotnet core SDK 2.2.101 (Required)
+* dotnet code Runtime 2.2 (Required)
 * docker (Recommended)
 * Visual Studio 2017 (Recommended)
 
@@ -32,6 +32,16 @@ The system is built with Docker in mind. However, it is possible to run and debu
 * dotnet restore
 * Open Solution file with Visual Studio 2017
 
+# Updating the database
+The Identity Server is configured using Entity Framework. On first install, it will be necessary to connect to your database and update the required tables.
+I have tried to simplify this as much as possible; the software should attempt to do a migration every boot up. If it fails perform the following steps;
+1. Ensure that your appsettings.Development.json file contains the correct connection strings.
+  * Copy the template from appsettings.json and replace `localhost`, `EXAMPLE_USER`, and `EXAMPLE_PASSWORD` with the correct values
+2. From the Powershell Console run: `dotnet ef database update --Context ConfigurationDbContext` and then `dotnet ef database update --Context PersistedGrantDbContext`
+
+The API requires running scripts and procedures manually (DBUpdateTool WIP). Start from SchemaPatch1_001 and work upwards numerically. If the API database hasn't been run the CreateDatabase.sql patch
+Procedures can be installed in any order, but only after the patches have been executed.
+Ensure that both the API and PerpetuumSA databases have been updated.
 
 # Extending Functionality
 Adding new functionality is made simple thanks to autoconfiguration.
