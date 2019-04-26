@@ -5,7 +5,7 @@ namespace OpenPerpetuum.Core.Authorisation.Queries
 {
     public class GAME_FindUserByAccountIdQuery : IQuery<UserModel>
     {
-        public string AccountId
+        public int AccountId
         {
             get;
             set;

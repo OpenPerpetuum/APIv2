@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpenPerpetuum.Core.Foundation.Processing;
+using OpenPerpetuum.Core.Killboard;
+using OpenPerpetuum.Core.Killboard.Queries;
 using OpenPerpetuum.Core.SharedIdentity.Authorisation;
 using System.Threading.Tasks;
 
@@ -13,11 +15,21 @@ namespace OpenPerpetuum.Api.Controllers
         public KillboardController(ICoreContext coreContext) : base(coreContext)
         { }
 
-        [HttpGet()]
-        public async Task<IActionResult> GetKillboard()
+        [HttpGet]
+        public async Task<IActionResult> GetKillboard([FromQuery]int? page, [FromQuery]int? resultsPerPage)
         {
-            // This just stops the compiler warning about not use async stuff in an async method
-            return await Task.Run(() => NotFound());
+            if (!page.HasValue)
+                page = 0;
+            if (!resultsPerPage.HasValue)
+                resultsPerPage = 10;
+
+            KillboardDataModel kbData = QueryProcessor.Process(new GAME_GetKillboardNoFilterQuery
+            {
+                Page = page.Value,
+                ResultsPerPage = resultsPerPage.Value
+            });
+
+            return await Task.Run(() => Ok(kbData));
         }
     }
 }

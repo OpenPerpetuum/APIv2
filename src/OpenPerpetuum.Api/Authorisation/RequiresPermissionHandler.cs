@@ -45,7 +45,9 @@ namespace OpenPerpetuum.Api.Authorisation
         {
             if (!user.Identity.IsAuthenticated) return false;
 
-            var accountId = user.Claims.Single(c => c.Type == JwtClaimTypes.Subject).Value;
+            if (!int.TryParse(user.Claims.Single(c => c.Type == JwtClaimTypes.Subject).Value, out int accountId))
+                return false;
+
             var userModel = Repository.Process(new GAME_FindUserByAccountIdQuery { AccountId = accountId });
 
             if (CheckPermission(userModel, Permission.OWNER))
