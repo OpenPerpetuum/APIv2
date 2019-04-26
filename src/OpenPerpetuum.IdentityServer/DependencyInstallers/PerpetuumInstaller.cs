@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OpenPerpetuum.Core.DataServices.Context;
 using OpenPerpetuum.Core.DataServices.CQRS;
@@ -16,7 +17,7 @@ namespace OpenPerpetuum.IdentityServer.DependencyInstallers
 	public static class PerpetuumInstaller
 	{
 		
-		public static void RegisterPerpetuumApiTypes(this IServiceCollection container)
+		public static void RegisterPerpetuumApiTypes(this IServiceCollection container, IConfiguration configuration)
 		{
 			IEnumerable<Assembly> asm = AssemblyLoader.Instance.RuntimeAssemblies;
 			Type commandHandlerType = typeof(ICommandHandler<>);
@@ -36,11 +37,11 @@ namespace OpenPerpetuum.IdentityServer.DependencyInstallers
 			container.AddScoped<IQueryProcessor, BasicQueryProcessor>();
 			container.AddScoped<IIdGeneratorService, IdGeneratorService>();
 			container.AddSingleton<IGenericContext, GenericContext>();
-			container.AddSingleton((sp) => GetPerpetuumDatabases(sp));
+			container.AddSingleton((sp) => GetPerpetuumDatabases(sp, configuration));
 			container.AddScoped<ICoreContext, CoreContext>();
 		}
 
-		private static IDataContext GetPerpetuumDatabases(IServiceProvider container)
+		private static IDataContext GetPerpetuumDatabases(IServiceProvider container, IConfiguration configuration)
 		{
 			IEnumerable<Assembly> asm = AssemblyLoader.Instance.RuntimeAssemblies;
 			var providers = asm.SelectMany(a => a.DefinedTypes).Where(type => typeof(IDatabaseProvider).IsAssignableFrom(type.AsType()));
@@ -54,7 +55,8 @@ namespace OpenPerpetuum.IdentityServer.DependencyInstallers
 				try
 				{
 					var providerType = providers.Single(ti => ti.Name.StartsWith(dbConfig.Type));
-					provider = Activator.CreateInstance(providerType.AsType(), new object[] { dbConfig.ProviderName, dbConfig.Username, dbConfig.Password, dbConfig.Server, dbConfig.DefaultDatabase }) as IDatabaseProvider;
+                    var connectionString = configuration.GetConnectionString(dbConfig.ConnectionId);
+					provider = Activator.CreateInstance(providerType.AsType(), new object[] { dbConfig.ProviderName, connectionString }) as IDatabaseProvider;
 				}
 				catch (InvalidOperationException ioe)
 				{

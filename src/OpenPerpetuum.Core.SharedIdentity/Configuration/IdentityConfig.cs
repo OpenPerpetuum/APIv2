@@ -1,5 +1,6 @@
 ﻿using IdentityModel;
 using IdentityServer4.Models;
+using OpenPerpetuum.Core.SharedIdentity.Authorisation;
 using System.Collections.Generic;
 
 namespace OpenPerpetuum.Core.SharedIdentity.Configuration
@@ -8,13 +9,7 @@ namespace OpenPerpetuum.Core.SharedIdentity.Configuration
 	// but this will do for now
 	public static class IdentityConfig
 	{
-		public const string API_Name = "OPAPI";
-
-		public static class Scopes
-		{
-			public const string Registration = "OP_REG";
-			public const string Killboard = "OP_KILLBOARD";
-		}
+		public const string API_Name = "OP_API";
 
 		public static IEnumerable<ApiResource> GetApiResources()
 		{
@@ -27,9 +22,6 @@ namespace OpenPerpetuum.Core.SharedIdentity.Configuration
 					UserClaims =
 					{
 						JwtClaimTypes.Audience,
-						JwtClaimTypes.Name,
-						JwtClaimTypes.Email,
-						JwtClaimTypes.EmailVerified,
 						JwtClaimTypes.ClientId
 					},
 					Scopes =
@@ -41,7 +33,7 @@ namespace OpenPerpetuum.Core.SharedIdentity.Configuration
 						},
 						new Scope
 						{
-							Name = Scopes.Killboard,
+							Name = Scopes.ExternalKillboard,
 							DisplayName = "Access to killboard and leaderboards"
 						}
 						// If we wanted to add further scoped resources we can. We can control access to resources with Scopes via the Authorize attribute

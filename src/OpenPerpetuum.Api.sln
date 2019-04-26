@@ -17,9 +17,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPerpetuum.IdentityServe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPerpetuum.Core.SharedIdentity", "OpenPerpetuum.Core.SharedIdentity\OpenPerpetuum.Core.SharedIdentity.csproj", "{02B6AFF6-6177-45ED-B25A-6B8754699812}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPerpetuum.Core.Genxy", "OpenPerpetuum.Core.Genxy\OpenPerpetuum.Core.Genxy.csproj", "{6ECBD241-0934-454A-9374-830B25087059}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPerpetuum.Core.Genxy", "OpenPerpetuum.Core.Genxy\OpenPerpetuum.Core.Genxy.csproj", "{6ECBD241-0934-454A-9374-830B25087059}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPerpetuum.Core.Killboard", "OpenPerpetuum.Core.Killboard\OpenPerpetuum.Core.Killboard.csproj", "{5EB04F20-828D-4013-A77E-18D652F45247}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPerpetuum.Core.Killboard", "OpenPerpetuum.Core.Killboard\OpenPerpetuum.Core.Killboard.csproj", "{5EB04F20-828D-4013-A77E-18D652F45247}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "API", "API", "{EB0619CD-EA14-4F23-82BD-445147032D31}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity Server", "Identity Server", "{994841D4-7ECA-469B-A50F-54C77B12B40B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{A68AE22F-4139-4587-9E56-60E4ECA67B68}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,6 +72,17 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F8A63EB1-34DC-42EE-B602-1C8B5B4A5968} = {EB0619CD-EA14-4F23-82BD-445147032D31}
+		{C9F4A668-5547-4A69-9F2A-855ED852A80A} = {A68AE22F-4139-4587-9E56-60E4ECA67B68}
+		{E11E68A3-3E71-44DB-8536-21813AA9D1A9} = {A68AE22F-4139-4587-9E56-60E4ECA67B68}
+		{D86CC47A-88C2-49DB-8B36-ED14471D03A2} = {A68AE22F-4139-4587-9E56-60E4ECA67B68}
+		{72288B00-F3D3-4C19-A277-9EF2EFAE9ADE} = {A68AE22F-4139-4587-9E56-60E4ECA67B68}
+		{C6F97053-41ED-4BCB-AF42-99C3C8FCBE0B} = {994841D4-7ECA-469B-A50F-54C77B12B40B}
+		{02B6AFF6-6177-45ED-B25A-6B8754699812} = {A68AE22F-4139-4587-9E56-60E4ECA67B68}
+		{6ECBD241-0934-454A-9374-830B25087059} = {A68AE22F-4139-4587-9E56-60E4ECA67B68}
+		{5EB04F20-828D-4013-A77E-18D652F45247} = {A68AE22F-4139-4587-9E56-60E4ECA67B68}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0F468AD3-A642-4BE5-A167-554112C33363}

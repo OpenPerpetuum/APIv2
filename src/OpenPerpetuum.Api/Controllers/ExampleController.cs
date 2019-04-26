@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OpenPerpetuum.Core.Foundation.Processing;
+using OpenPerpetuum.Core.SharedIdentity.Authorisation;
+using OpenPerpetuum.Core.SharedIdentity.Authorisation.Policy;
 using System.Collections.Generic;
 
 namespace OpenPerpetuum.Api.Controllers
@@ -12,7 +14,8 @@ namespace OpenPerpetuum.Api.Controllers
 		{ }
 
         // GET api/values
-        [HttpGet("{id}")]
+        // Requires that the user identified by the Bearer has the OWNER permission in the OP DB
+        [HttpGet("{id}"), RequiresPermission(Permission.OWNER)]
         public ActionResult<IEnumerable<string>> Get(int id)
         {
 			if (id < 10)

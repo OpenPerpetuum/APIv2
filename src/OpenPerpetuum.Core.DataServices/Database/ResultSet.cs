@@ -91,9 +91,9 @@ namespace OpenPerpetuum.Core.DataServices.Database
 				if (property != null)
 				{
 					object valueToSet = dataRow[field];
-					if ((property.PropertyType.IsEnum || EnumExtensions.IsNullableEnum(property.PropertyType)) && valueToSet is string)
+					if ((property.PropertyType.IsEnum || EnumHelpers.IsNullableEnum(property.PropertyType)) && valueToSet is string)
 					{
-						if (EnumExtensions.IsNullableEnum(property.PropertyType))
+						if (EnumHelpers.IsNullableEnum(property.PropertyType))
 							valueToSet = Enum.Parse(Nullable.GetUnderlyingType(property.PropertyType), (string)valueToSet);
 						else
 							valueToSet = Enum.Parse(property.PropertyType, (string)valueToSet);

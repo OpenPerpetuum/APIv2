@@ -1,4 +1,4 @@
-﻿namespace OpenPerpetuum.Api.Configuration
+﻿namespace OpenPerpetuum.Core.Killboard
 {
 	public class TestData
 	{
