@@ -87,6 +87,10 @@ namespace OpenPerpetuum.Api
 				{
 					builder.RequireScope(Scopes.Registration);
 				});
+                options.AddPolicy(Scopes.ExternalKillboard, builder =>
+                {
+                    builder.RequireAssertion((context) => { return true; });
+                });
                 options.AddPolicy("RequiresLogin", policy =>
                 {
                     policy.RequireAuthenticatedUser();
@@ -114,7 +118,7 @@ namespace OpenPerpetuum.Api
             {
                 isDevMode = true;
                 app.UseDeveloperExceptionPage();
-				app.UseCors("development");
+				//app.UseCors("development");
             }
             else
             {

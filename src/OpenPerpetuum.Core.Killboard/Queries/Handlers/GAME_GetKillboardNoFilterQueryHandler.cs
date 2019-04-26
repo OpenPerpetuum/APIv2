@@ -1,35 +1,53 @@
 ﻿using Microsoft.Extensions.Options;
+using OpenPerpetuum.Core.DataServices.Database;
+using OpenPerpetuum.Core.DataServices.Database.Interfaces;
 using OpenPerpetuum.Core.Foundation.Processing;
 using OpenPerpetuum.Core.Genxy;
+using OpenPerpetuum.Core.Killboard.DatabaseResults;
 using OpenPerpetuum.Core.Killboard.DataModel;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace OpenPerpetuum.Core.Killboard.Queries.Handlers
 {
-    internal class GAME_GetKillboardNoFilterQueryHandler : IQueryHandler<GAME_GetKillboardNoFilterQuery, ReadOnlyCollection<KillDataGenxy>>
+    internal class GAME_GetKillboardNoFilterQueryHandler : IQueryHandler<GAME_GetKillboardNoFilterQuery, KillboardDataModel>
     {
+        private readonly IDatabaseProvider dataContext;
         private readonly IGenxyReader genxyReader;
-        private readonly TestData testData;
 
-        public GAME_GetKillboardNoFilterQueryHandler(IGenxyReader genxyReader, IOptionsSnapshot<TestData> testData)
+        public GAME_GetKillboardNoFilterQueryHandler(IGenxyReader genxyReader, IDataContext dataContext)
         {
             this.genxyReader = genxyReader;
-            this.testData = testData.Value;
+            this.dataContext = dataContext.GetDataContext("Game");
         }
 
-        public ReadOnlyCollection<KillDataGenxy> Handle(GAME_GetKillboardNoFilterQuery query)
+        public KillboardDataModel Handle(GAME_GetKillboardNoFilterQuery query)
         {
-            if (testData != null)
-            {
-                if (!string.IsNullOrWhiteSpace(testData.TestKillData))
+            IResult<KillboardResult> result = dataContext.ExecuteProcedure<KillboardResult>(
+                "API.GetKillReportsNoFilter",
+                new DbParameters
                 {
-                    var killData = genxyReader.Deserialise<KillDataGenxy>(testData.TestKillData);
-                    return new List<KillDataGenxy> { killData }.AsReadOnly();
-                }
+                    { "Page", query.Page },
+                    { "ResultsPerPage", query.ResultsPerPage}
+                });
+
+            // Always call this after the query
+            result.ValidateResult();
+
+            var killList = new List<KillDataGenxy>();
+
+            foreach(KillboardData data in result.Data.Kills)
+            {
+                if (!string.IsNullOrWhiteSpace(data.GenxyData))
+                    killList.Add(genxyReader.Deserialise<KillDataGenxy>(data.GenxyData));
             }
 
-            return new List<KillDataGenxy>().AsReadOnly();
+            return new KillboardDataModel
+            {
+                KillData = killList.AsReadOnly(),
+                Page = query.Page,
+                ResultsPerPage = query.ResultsPerPage
+            };
         }
     }
 }
