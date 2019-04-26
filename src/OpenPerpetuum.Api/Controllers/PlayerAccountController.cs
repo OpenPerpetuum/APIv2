@@ -2,13 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using OpenPerpetuum.Api.Models.PlayerAccount;
 using OpenPerpetuum.Core.Foundation.Processing;
+using OpenPerpetuum.Core.SharedIdentity.Authorisation;
 using System.Net;
-using System.Threading.Tasks;
-using static OpenPerpetuum.Core.SharedIdentity.Configuration.IdentityConfig;
 
 namespace OpenPerpetuum.Api.Controllers
 {
-	[Route("api/[controller]")]
+    [Route("api/[controller]"), Authorize(Policy = Scopes.Registration)] // All methods in this controller require that the consuming client has the Registration scope in their Bearer token. NOTE: A client can be either a User or an Application
 	public class PlayerAccountController : ApiControllerBase
 	{
 		public PlayerAccountController(ICoreContext coreContext) : base(coreContext)
@@ -21,13 +20,13 @@ namespace OpenPerpetuum.Api.Controllers
 			return Ok();
 		}
 
-		[HttpGet("[action]"), Authorize(Policy = Scopes.Registration)]
+		[HttpGet("[action]")]
 		public IActionResult Test()
 		{
 			return Ok();
 		}
 
-		[HttpPost("register"), Authorize(Policy = Scopes.Registration)]
+		[HttpPost("register")]
 		public IActionResult CreateNewPlayer([FromBody] CreateNewPlayerModel request)
 		{
 			return StatusCode((int)HttpStatusCode.NotImplemented);

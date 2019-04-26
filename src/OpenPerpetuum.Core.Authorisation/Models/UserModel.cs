@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenPerpetuum.Core.SharedIdentity.Authorisation;
+using System;
 
 namespace OpenPerpetuum.Core.Authorisation.Models
 {
@@ -98,5 +99,16 @@ namespace OpenPerpetuum.Core.Authorisation.Models
 			get;
 			set;
 		}
+
+        public Permission[] Permissions
+        {
+            get
+            {
+                if (AccessLevel == AccessLevel.Admin)
+                    return new Permission[] { Permission.OWNER };
+                else
+                    return new Permission[] { };
+            }
+        }
 	}
 }

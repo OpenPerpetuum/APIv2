@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <Copyright>OpenPerpetuum 2018</Copyright>
     <NeutralLanguage>en-GB</NeutralLanguage>
   </PropertyGroup>
@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OpenPerpetuum.Core.DataServices\OpenPerpetuum.Core.DataServices.csproj" />
     <ProjectReference Include="..\OpenPerpetuum.Core.Foundation\OpenPerpetuum.Core.Foundation.csproj" />
+    <ProjectReference Include="..\OpenPerpetuum.Core.SharedIdentity\OpenPerpetuum.Core.SharedIdentity.csproj" />
   </ItemGroup>
 
 </Project>

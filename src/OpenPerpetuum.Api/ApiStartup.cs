@@ -1,4 +1,5 @@
-﻿using IdentityServer4.AccessTokenValidation;
+﻿using IdentityModel;
+using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,28 +14,25 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
 using Newtonsoft.Json;
+using OpenPerpetuum.Api.Authorisation;
 using OpenPerpetuum.Api.Configuration;
 using OpenPerpetuum.Api.DependencyInstallers;
 using OpenPerpetuum.Core.Extensions;
+using OpenPerpetuum.Core.Killboard;
+using OpenPerpetuum.Core.SharedIdentity.Authorisation;
+using OpenPerpetuum.Core.SharedIdentity.Authorisation.Policy;
 using OpenPerpetuum.Core.SharedIdentity.Configuration;
 using System;
-using static OpenPerpetuum.Core.SharedIdentity.Configuration.IdentityConfig;
 
 namespace OpenPerpetuum.Api
 {
-	public class Startup
+	public class ApiStartup
     {
-        private IConfigurationRoot Configuration { get; }
+        private IConfiguration Configuration { get; }
 
-        public Startup(IHostingEnvironment env)
+        public ApiStartup(IConfiguration configuration)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables();
-
-            Configuration = builder.Build();
+            Configuration = configuration;
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -47,13 +45,39 @@ namespace OpenPerpetuum.Api
 
 			services.Configure<OpenIdConnectConfiguration>(options => Configuration.GetSection("OpenIdConnect").Bind(options));
 			services.Configure<DataProviderConfiguration>(options => Configuration.GetSection("DataProviders").Bind(options));
+			services.Configure<TestData>(options => Configuration.GetSection("TestData").Bind(options));
 
-			services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+            services.AddMvcCore(setupAction =>
+            {
+#if DEBUG // Don't cache in debug mode
+                setupAction.CacheProfiles.Add(
+                    key: "Never",
+                    value: new CacheProfile
+                    {
+                        Duration = -1,
+                        Location = ResponseCacheLocation.None,
+                        NoStore = true
+                    });
+#endif
+            })
+            .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+            .AddAuthorization()
+            .AddJsonFormatters()
+            .AddJsonOptions(options =>
+            {
+#if DEBUG
+                options.SerializerSettings.Formatting = Formatting.Indented;
+#else
+				options.SerializerSettings.Formatting = Formatting.None;
+#endif
+            });
+
+            services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
 				.AddIdentityServerAuthentication(options =>
 				{
 					options.Authority = openIdConnectConfig.IdentityServer;
-					options.ApiName = "OPAPI";
-					options.RequireHttpsMetadata = !openIdConnectConfig.AllowInsecureHttp;
+					options.ApiName = IdentityConfig.API_Name;
+					options.RequireHttpsMetadata = openIdConnectConfig.RequireHttpsMetadata;
 					options.Validate();
 				});
 
@@ -63,81 +87,25 @@ namespace OpenPerpetuum.Api
 				{
 					builder.RequireScope(Scopes.Registration);
 				});
-			});
-			
-			services.AddCors(options =>
-			{
-				options.AddPolicy("development", policy =>
-				{
-					policy
-					.AllowAnyOrigin()
-					.AllowCredentials()
-					.AllowAnyHeader()
-					.AllowAnyMethod();
-				});
-			});
+                options.AddPolicy("RequiresLogin", policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim(JwtClaimTypes.Subject);
+                });
+            });
 
-			services.AddSession(sessionOptions =>
-			{
-				sessionOptions.Cookie.Name = ".OpenPerpetuum.APIv2.Session";
-				sessionOptions.Cookie.HttpOnly = true;
-#if RELEASE
-				sessionOptions.IdleTimeout = TimeSpan.FromHours(2);
-				sessionOptions.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-				sessionOptions.Cookie.SameSite = SameSiteMode.Strict;
-#else
-				sessionOptions.IdleTimeout = TimeSpan.FromHours(24);
-				sessionOptions.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-				sessionOptions.Cookie.SameSite = SameSiteMode.None;				
-#endif
-			});
-
-			services.AddMvcCore(setupAction =>
-			{
-#if DEBUG // Don't cache in debug mode
-				setupAction.CacheProfiles.Add(
-					key: "Never",
-					value: new CacheProfile
-					{
-						Duration = -1,
-						Location = ResponseCacheLocation.None,
-						NoStore = true
-					});
-#endif
-			})
-			.SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
-			.AddAuthorization()
-			.AddJsonFormatters()
-			.AddJsonOptions(options =>
-			{
-#if DEBUG
-				options.SerializerSettings.Formatting = Formatting.Indented;
-#else
-				options.SerializerSettings.Formatting = Formatting.None;
-#endif
-			});
-
+            services.AddTransient<IAuthorizationHandler, RequiresPermissionHandler>();
+            services.AddSingleton<IAuthorizationPolicyProvider, RequiresPermissionPolicyProvider>();
+            
 			services.AddMemoryCache();
-			services.AddDistributedMemoryCache();
+			// services.AddDistributedMemoryCache(); -- No Redis implementation yet
 
-			services.RegisterPerpetuumApiTypes();
+			services.RegisterPerpetuumApiTypes(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime applicationLifetime)
         {
-            // Event log is only support on Windows systems
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            {
-                loggerFactory.AddEventLog(new EventLogSettings
-                {
-                    Filter = new Func<string, LogLevel, bool>((inString, inLevel) => { return inLevel >= LogLevel.Warning; }),
-                    LogName = "Application",
-                    MachineName = Environment.MachineName,
-                    SourceName = "OP APIv2"
-                }); // Only log warnings or above in the event log, regardless of debug settings.
-            }
-
             ILogger startupLog = loggerFactory.CreateLogger("Startup");
 
 			bool isDevMode = false, isHsts = false, isHttps = false;
