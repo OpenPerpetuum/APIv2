@@ -10,7 +10,7 @@ using System.Collections.ObjectModel;
 
 namespace OpenPerpetuum.Core.Killboard.Queries.Handlers
 {
-    internal class GAME_GetKillboardNoFilterQueryHandler : IQueryHandler<GAME_GetKillboardNoFilterQuery, KillboardDataModel>
+    internal class GAME_GetKillboardNoFilterQueryHandler : IQueryHandler<GAME_GetKillboardNoFilterQuery, KillboardDataResultModel>
     {
         private readonly IDatabaseProvider dataContext;
         private readonly IGenxyReader genxyReader;
@@ -21,7 +21,7 @@ namespace OpenPerpetuum.Core.Killboard.Queries.Handlers
             this.dataContext = dataContext.GetDataContext("Game");
         }
 
-        public KillboardDataModel Handle(GAME_GetKillboardNoFilterQuery query)
+        public KillboardDataResultModel Handle(GAME_GetKillboardNoFilterQuery query)
         {
             IResult<KillboardResult> result = dataContext.ExecuteProcedure<KillboardResult>(
                 "API.GetKillReportsNoFilter",
@@ -42,7 +42,7 @@ namespace OpenPerpetuum.Core.Killboard.Queries.Handlers
                     killList.Add(genxyReader.Deserialise<KillDataGenxy>(data.GenxyData));
             }
 
-            return new KillboardDataModel
+            return new KillboardDataResultModel
             {
                 KillData = killList.AsReadOnly(),
                 Page = query.Page,

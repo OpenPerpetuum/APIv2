@@ -1,3 +1,8 @@
 <ProcedureControl>
 	<Object schema="API" object="AuthenticateAndGetUserInfo" filename="API.AuthenticateAndGetUserInfo.sql" type="Procedure" />
+	<Object schema="API" object="CreatePlayerAccount" filename="API.CreatePlayerAccount.sql" type="Procedure" />
+	<Object schema="API" object="FindUserByAccountId" filename="API.FindUserByAccountId.sql" type="Procedure" />
+	<Object schema="API" object="FindZoneByZoneId" filename="API.FindZoneByZoneId.sql" type="Procedure" />
+	<Object schema="API" object="GetEntityDefaultsByDefinition" filename="API.GetEntityDefaultsByDefinition.sql" type="Procedure" /> 
+	<Object schema="API" object="GetKillReportsNoFilter" filename="API.GetKillReportsNoFilter.sql" type="Procedure" />
 </ProcedureControl>

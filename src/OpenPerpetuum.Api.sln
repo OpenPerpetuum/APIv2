@@ -33,6 +33,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "[Solution Items]", "[Soluti
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPerpetuum.Core.Definition", "OpenPerpetuum.Core.Definition\OpenPerpetuum.Core.Definition.csproj", "{00BF1DDB-7D22-4580-91A6-A763BFF0ED25}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,10 @@ Global
 		{5EB04F20-828D-4013-A77E-18D652F45247}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5EB04F20-828D-4013-A77E-18D652F45247}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5EB04F20-828D-4013-A77E-18D652F45247}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00BF1DDB-7D22-4580-91A6-A763BFF0ED25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00BF1DDB-7D22-4580-91A6-A763BFF0ED25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00BF1DDB-7D22-4580-91A6-A763BFF0ED25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00BF1DDB-7D22-4580-91A6-A763BFF0ED25}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -89,6 +95,7 @@ Global
 		{02B6AFF6-6177-45ED-B25A-6B8754699812} = {A68AE22F-4139-4587-9E56-60E4ECA67B68}
 		{6ECBD241-0934-454A-9374-830B25087059} = {A68AE22F-4139-4587-9E56-60E4ECA67B68}
 		{5EB04F20-828D-4013-A77E-18D652F45247} = {A68AE22F-4139-4587-9E56-60E4ECA67B68}
+		{00BF1DDB-7D22-4580-91A6-A763BFF0ED25} = {A68AE22F-4139-4587-9E56-60E4ECA67B68}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0F468AD3-A642-4BE5-A167-554112C33363}

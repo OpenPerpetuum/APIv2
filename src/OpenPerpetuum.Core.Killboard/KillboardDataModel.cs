@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 
 namespace OpenPerpetuum.Core.Killboard
 {
-    public class KillboardDataModel
+    public class KillboardDataResultModel
     {
         public int Page { get; set; }
         public int ResultsPerPage { get; set; }
