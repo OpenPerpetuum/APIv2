@@ -22,6 +22,49 @@ namespace OpenPerpetuum.Api.Controllers
         public KillboardController(ICoreContext coreContext) : base(coreContext)
         { }
 
+        [HttpGet("today")]
+        public async Task<IActionResult> GetKillsToday([FromQuery]int? page, [FromQuery]int? resultsPerPage)
+        {
+            if (!page.HasValue)
+                page = 0;
+            if (!resultsPerPage.HasValue)
+                resultsPerPage = 10;
+            if (resultsPerPage.Value > 100)
+                resultsPerPage = 100;
+
+            KillboardDataResultModel kbData = QueryProcessor.Process(new GAME_GetTodaysKillReportsQuery
+            {
+                Page = page.Value,
+                ResultsPerPage = resultsPerPage.Value,
+                TodayDate = GenericContext.CurrentDateTime
+            });
+
+            var robotList = kbData.KillData
+                .Select(kd => kd.Victim.Robot)
+                .Union(kbData.KillData.SelectMany(kd => kd.Attackers, (kd, kda) => kda.Attacker.Robot))
+                .OrderBy(id => id)
+                .Distinct()
+                .Select(id => QueryProcessor.Process(new GAME_FindRobotEntityDefaultsByDefinitionQuery { DefinitionId = id }))
+                .Select(dm => new BasicRobotViewModel
+                {
+                    DefinitionName = dm.DefinitionName,
+                    DescriptionToken = dm.DescriptionToken,
+                    RobotId = dm.Definition
+                })
+                .ToList()
+                .AsReadOnly();
+
+            GetKillboardResponseViewModel viewModel = new GetKillboardResponseViewModel
+            {
+                Page = kbData.Page,
+                ResultsPerPage = kbData.ResultsPerPage,
+                ResultsReturned = kbData.ResultsReturned,
+                KillReports = kbData.KillData.Select(kd => CreateKillReportViewModel(kd, robotList)).ToList().AsReadOnly()
+            };
+
+            return await Task.Run(() => Ok(viewModel));
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetKillboard([FromQuery]int? page, [FromQuery]int? resultsPerPage)
         {

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2036
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPerpetuum.Api", "OpenPerpetuum.Api\OpenPerpetuum.Api.csproj", "{F8A63EB1-34DC-42EE-B602-1C8B5B4A5968}"
 EndProject
@@ -33,7 +33,53 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "[Solution Items]", "[Soluti
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenPerpetuum.Core.Definition", "OpenPerpetuum.Core.Definition\OpenPerpetuum.Core.Definition.csproj", "{00BF1DDB-7D22-4580-91A6-A763BFF0ED25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPerpetuum.Core.Definition", "OpenPerpetuum.Core.Definition\OpenPerpetuum.Core.Definition.csproj", "{00BF1DDB-7D22-4580-91A6-A763BFF0ED25}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{CFAFF2EE-814D-4896-9686-4E766CB3F51B}"
+	ProjectSection(SolutionItems) = preProject
+		Database\PatchControl.xml = Database\PatchControl.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Game", "Game", "{F0F7980B-E7DB-49FD-B9F4-976329FF36AA}"
+	ProjectSection(SolutionItems) = preProject
+		Database\game\Catalogue.xml = Database\game\Catalogue.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "API", "API", "{E26C2BD8-86DD-4CF7-A01C-90905BA771B2}"
+	ProjectSection(SolutionItems) = preProject
+		Database\api\Catalogue.xml = Database\api\Catalogue.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Patches", "Patches", "{5232233A-CDB5-4514-8CC9-A37A0E2DD8C1}"
+	ProjectSection(SolutionItems) = preProject
+		Database\api\Patches\Create_Database_Init.sql = Database\api\Patches\Create_Database_Init.sql
+		Database\api\Patches\PatchControl.xml = Database\api\Patches\PatchControl.xml
+		Database\api\Patches\SchemaPatch1_001.sql = Database\api\Patches\SchemaPatch1_001.sql
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Procedures", "Procedures", "{C9EED57B-DF23-4140-9E9B-D667A176967F}"
+	ProjectSection(SolutionItems) = preProject
+		Database\api\Procedures\Authorisation.GetAccessClients.sql = Database\api\Procedures\Authorisation.GetAccessClients.sql
+		Database\api\Procedures\ProcedureControl.xml = Database\api\Procedures\ProcedureControl.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Patches", "Patches", "{67B7EF94-8438-4470-A47A-6809B13C4DF9}"
+	ProjectSection(SolutionItems) = preProject
+		Database\game\Patches\PatchControl.xml = Database\game\Patches\PatchControl.xml
+		Database\game\Patches\SchemaPatch1_001.sql = Database\game\Patches\SchemaPatch1_001.sql
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Procedures", "Procedures", "{6CD25A0B-DB22-4886-B40E-9562F05A7221}"
+	ProjectSection(SolutionItems) = preProject
+		Database\game\Procedures\API.AuthenticateAndGetUserInfo.sql = Database\game\Procedures\API.AuthenticateAndGetUserInfo.sql
+		Database\game\Procedures\API.CreatePlayerAccount.sql = Database\game\Procedures\API.CreatePlayerAccount.sql
+		Database\game\Procedures\API.FindUserByAccountId.sql = Database\game\Procedures\API.FindUserByAccountId.sql
+		Database\game\Procedures\API.FindZoneByZoneId.sql = Database\game\Procedures\API.FindZoneByZoneId.sql
+		Database\game\Procedures\API.GetEntityDefaultsByDefinition.sql = Database\game\Procedures\API.GetEntityDefaultsByDefinition.sql
+		Database\game\Procedures\API.GetKillReportsNoFilter.sql = Database\game\Procedures\API.GetKillReportsNoFilter.sql
+		API.GetTodaysKillReports.sql = API.GetTodaysKillReports.sql
+		Database\game\Procedures\ProcedureControl.xml = Database\game\Procedures\ProcedureControl.xml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -96,6 +142,13 @@ Global
 		{6ECBD241-0934-454A-9374-830B25087059} = {A68AE22F-4139-4587-9E56-60E4ECA67B68}
 		{5EB04F20-828D-4013-A77E-18D652F45247} = {A68AE22F-4139-4587-9E56-60E4ECA67B68}
 		{00BF1DDB-7D22-4580-91A6-A763BFF0ED25} = {A68AE22F-4139-4587-9E56-60E4ECA67B68}
+		{CFAFF2EE-814D-4896-9686-4E766CB3F51B} = {09BED128-63B9-4B39-86F9-06230E397308}
+		{F0F7980B-E7DB-49FD-B9F4-976329FF36AA} = {CFAFF2EE-814D-4896-9686-4E766CB3F51B}
+		{E26C2BD8-86DD-4CF7-A01C-90905BA771B2} = {CFAFF2EE-814D-4896-9686-4E766CB3F51B}
+		{5232233A-CDB5-4514-8CC9-A37A0E2DD8C1} = {E26C2BD8-86DD-4CF7-A01C-90905BA771B2}
+		{C9EED57B-DF23-4140-9E9B-D667A176967F} = {E26C2BD8-86DD-4CF7-A01C-90905BA771B2}
+		{67B7EF94-8438-4470-A47A-6809B13C4DF9} = {F0F7980B-E7DB-49FD-B9F4-976329FF36AA}
+		{6CD25A0B-DB22-4886-B40E-9562F05A7221} = {F0F7980B-E7DB-49FD-B9F4-976329FF36AA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0F468AD3-A642-4BE5-A167-554112C33363}
