@@ -1,6 +1,3 @@
-USE [perpetuumsa]
-GO
-
 ----------------------------------------------------
 --Query for Top EP earners by some time period
 --Last updated: 2019/07/02

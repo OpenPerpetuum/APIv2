@@ -1,6 +1,3 @@
-USE [perpetuumsa]
-GO
-
 ----------------------------------------------------
 --Query for Top EP earners by some time period and Activity Type
 --Activity Type Enum: https://github.com/OpenPerpetuum/PerpetuumServer/blob/Development/src/Perpetuum/EpForActivityType.cs

@@ -1,6 +1,3 @@
-USE [perpetuumsa]
-GO
-
 ----------------------------------------------------
 --Most Dangerous Agents - PVP leaderboard - simple killcounts
 --Last updated: 2019/07/02

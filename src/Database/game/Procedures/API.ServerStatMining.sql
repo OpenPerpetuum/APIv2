@@ -1,7 +1,3 @@
-USE [perpetuumsa]
-GO
-
-
 ----------------------------------------------------
 --Server Statistics: Mining
 --Displays ores gathered as aggregate statistics grouped by ore definition

@@ -1,6 +1,3 @@
-USE [perpetuumsa]
-GO
-
 ----------------------------------------------------
 --Production leaderboard - who produced the most type of item for some time range
 --Good general CategoryFlag Names:
