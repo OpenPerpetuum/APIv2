@@ -1,4 +1,4 @@
 <Catalogue>
-	<patch filename="./Patches/PatchControl.xml" />
-	<objectdefinition filename="./Procedures/ProcedureControl.xml" />
+	<patch filename="/Patches/PatchControl.xml" />
+	<objectDefinition filename="/Procedures/ProcedureControl.xml" />
 </Catalogue>
