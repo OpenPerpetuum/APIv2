@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  nginx-proxy:
+    container_name: op_rp_helper
+    image: jwilder/nginx-proxy:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/certs/containers:/etc/nginx/certs:ro"
+      - "vhost:/etc/nginx/vhost.d"
+      - "shared:/usr/share/nginx/html"
+      - "/var/run/docker.sock:/tmp/docker.sock:ro"
+    labels:
+      - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy=true"
+    networks:
+      - reverse-proxy
+
+  le-helper:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    environment:
+      - NGINX_PROXY_CONTAINER=op_rp_helper
+    volumes:
+      - "/var/certs/containers:/etc/nginx/certs:rw"
+      - "vhost:/etc/nginx/vhost.d"
+      - "shared:/usr/share/nginx/html"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - reverse-proxy
+
+networks:
+  reverse-proxy:
+    external:
+      name: src_reverse-proxy
+
+volumes:
+  vhost:
+  shared:

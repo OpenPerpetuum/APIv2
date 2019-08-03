@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+  api:
+    image: op-api-v2:latest-test
+    container_name: op-services_api
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    environment:
+      - ENVIRONMENT=Staging
+      - HOME=/var
+      - ASPNETCORE_URLS=http://dev.apiv2.openperpetuum.com:5101;https://dev.apiv2.openperpetuum.com:5100
+      - ASPNETCORE_HTTPS_PORT=5100
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/dev.apiv2.openperpetuum.com.pfx
+      - VIRTUAL_HOST=dev.apiv2.openperpetuum.com
+      - VIRTUAL_PORT=5100
+      - VIRTUAL_PROTO=https
+      - LETSENCRYPT_HOST=dev.apiv2.openperpetuum.com
+      - LETSENCRYPT_EMAIL=dan.smith@zyned.com
+    entrypoint:
+      - dotnet
+      - OpenPerpetuum.Api.dll
+      - --Environment=Staging
+    volumes:
+      - "/var/certs/containers:/https:ro"
+    ports:
+      - "5100:5100"
+    networks:
+      - reverse-proxy
+
+networks:
+  reverse-proxy:
+    external:
+      name: src_reverse-proxy
+
+volumes:
+  vhost:
+  shared:

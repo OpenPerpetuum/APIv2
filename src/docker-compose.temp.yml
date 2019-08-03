@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  api:
+    image: nginx:alpine
+    container_name: api
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    environment:
+      - VIRTUAL_HOST=dev.apiv2.openperpetuum.com
+      - VIRTUAL_PORT=5100
+      - LETSENCRYPT_HOST=dev.apiv2.openperpetuum.com
+      - LETSENCRYPT_EMAIL=dan.smith@zyned.com
+    volumes:
+      - "/var/certs/containers:/https:ro"
+    ports:
+      - "5100:80"
+    networks:
+      - reverse-proxy
+networks:
+  reverse-proxy:
+    external:
+      name: src_reverse-proxy
