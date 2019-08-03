@@ -1,7 +1,3 @@
-if object_id('Authorisation.GetAccessClients', 'P') is not null
-	drop procedure Authorisation.GetAccessClients;
-go
-
 create procedure Authorisation.GetAccessClients
 	@ClientId uniqueidentifier null
 as
