@@ -21,7 +21,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="2.2.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.7.2" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Scrutor" Version="3.0.2" />
     <PackageReference Include="StackExchange.Redis.Extensions.AspNetCore" Version="5.0.1" />
     <PackageReference Include="StackExchange.Redis.Extensions.Core" Version="5.0.1" />
